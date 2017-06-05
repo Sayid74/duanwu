@@ -8,21 +8,10 @@ import com.ucap.commons.logger.LoggerAdapter;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static com.ucap.commons.logger.LFactory.mount;
-
 
 public class LoggerAdapterSayid implements LoggerAdapter
 {
     private Logger logger;
-
-    static
-    {
-        try {
-            mount(LoggerAdapterSayid.class);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-    }
 
     public void init(Class clazz)
     {

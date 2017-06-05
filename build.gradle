@@ -5,13 +5,15 @@ apply plugin: 'java'
 apply plugin: 'application'
 
 sourceCompatibility = 1.8
-mainClassName = 'prsn.sayid.duanwu.App'
+mainClassName = 'com.ucap.duanwu.App'
 
 version = '1.0'
 jar {
     manifest {
-        attributes 'Implementation-Title':'Duanwu',
-                   'Implementation-Version': version
+        attributes 'Implementation-Title':'Duanwu'
+        attributes 'Implementation-Version': version
+        attributes 'Main-Class': mainClassName
+            
     }
 }
 

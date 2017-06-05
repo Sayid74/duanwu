@@ -7,23 +7,41 @@ import prsn.sayid.common.LoggerAdapterSayid;
  */
 public class LFactory
 {
+    private static volatile Class<? extends LoggerAdapter> loggerClass;
+    static
+    {
+        try
+        {
+            String lcPrp = System.getProperty("com.ucap.logger");
+            ClassLoader.getSystemClassLoader().loadClass(lcPrp);
+        }
+        catch (ClassNotFoundException ex) 
+        {
+            ex.printStackTrace();
+        }
+    }
+
     public static LoggerAdapter makeL(Class c)
     {
-        if (l == null) return null;
+        if (loggerClass == null) return null;
 
         LoggerAdapter adapter = null;
         try {
-            adapter = l.newInstance();
+            adapter = loggerClass.newInstance();
         } catch (InstantiationException | IllegalAccessException e) { }
 
         adapter.init(c);
         return adapter;
     }
 
-    public static synchronized void mount(Class<? extends LoggerAdapter> l) throws IllegalAccessException
+    static
     {
-        if (l != null) throw new IllegalAccessException();
+        try {
+            LoggerAdapterSayid.class.newInstance();
+            loggerClass = LoggerAdapterSayid.class;
+        } catch (InstantiationException|IllegalAccessException e)
+        {
+            e.printStackTrace();
+        }
     }
-
-    private static volatile Class<? extends LoggerAdapter> l = null;
 }
