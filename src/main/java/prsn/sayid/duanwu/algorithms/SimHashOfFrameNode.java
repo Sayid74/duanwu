@@ -55,7 +55,7 @@ public class SimHashOfFrameNode {
     private List<FrameNode> nodes;
     private int vectorValues[] = new int[vectors.size()];
 
-    public SimHashOfFrameNode(List<FrameNode> nodes)
+    public SimHashOfFrameNode(List<? extends FrameNode> nodes)
     {
         this.nodes = Collections.unmodifiableList(nodes);
         vectorValues = new int[vectors.size()];
@@ -68,8 +68,10 @@ public class SimHashOfFrameNode {
         for(int i = 0; i < vectorValues.length; i++)
         {
             int value = vectorValues[i];
-            if (value >= 85) value = 15;
-            else{
+            if (value >= 85)
+                value = 15;
+            else
+            {
                 int v1 = value & 3;
                 int v2 = (value & (15 -  3)) == 0? 0 : 1;
                 int v3 = (value & (63 - 15)) == 0? 0 : 1;

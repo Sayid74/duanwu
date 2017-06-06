@@ -1,5 +1,7 @@
 package prsn.sayid.duanwu.htmlpage;
 
+import com.ucap.commons.logger.LFactory;
+import com.ucap.commons.logger.LoggerAdapter;
 import com.ucap.duanwu.htmlpage.*;
 
 import static com.ucap.duanwu.htmlpage.HtmlPage.mount;
@@ -8,10 +10,14 @@ import static com.ucap.duanwu.htmlpage.NodeType.nodeTypeOf;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
+import prsn.sayid.duanwu.algorithms.SimHashOfFrameNode;
 import prsn.sayid.duanwu.htmlpage.filters.FiltersConfig;
 
 import javax.servlet.FilterConfig;
 import java.io.InputStream;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -22,6 +28,8 @@ import java.util.stream.Stream;
  */
 public final class PageParserSayidImp implements PageParser
 {
+    private static LoggerAdapter L = LFactory.makeL(HtmlPage.class);
+
     int deepth;
     boolean free = false;
 
@@ -46,7 +54,6 @@ public final class PageParserSayidImp implements PageParser
     public void setParserDeepth(int deepth)
     {
         this.deepth = deepth;
-        
     }
 
     @Override
@@ -65,29 +72,43 @@ public final class PageParserSayidImp implements PageParser
         free = true;
     }
 
-    private void paserDom(Document document)
+    private void paserDom(Document document) throws PageParserException
     {
-        return new FramePage() {
-            final FrameNode root = (new Travering(document)).rootNode;
+        return new FramePage()
+        {
+            Travering t = new Travering(document);
+            final FrameNode root = t.rootNode;
             @Override
-            int countGroupByNodeType(NodeType nodeType)
+            public int countGroupByNodeType(NodeType nodeType)
             {
+                return t.ndtpCount.get(nodeType);
             }
             @Override
-            FrameNode getRoot()
+            public FrameNode getRoot()
             {
                 return root;
             }
             @Override
-            BigInteger simHash()
+            public BigInteger simHash()
             {
+                return (new SimHashOfFrameNode(t.nodes)).calculateSimhash();
             }
             @Override
-            BigInteger md5()
+            public BigInteger md5()
             {
+                List<Byte> data = t.nodes.stream()
+                        .map(a->(byte)(a.nodeType.ordinal()))
+                        .collect(Collectors.toList());
+                try {
+                    MessageDigest md5 = MessageDigest.getInstance("md5");
+                    byte d[] = new byte[data.size()];
+                    for(int i = 0; i < d.length; i++) d[i] = data.get(i);
+                    return new BigInteger(md5.digest(d));
+                } catch (NoSuchAlgorithmException e) {
+                }
             }
             @Override
-            List<FrameNode> wideFirstTravel()
+            public List<FrameNode> wideFirstTravel()
             {
             }
         }
@@ -188,7 +209,8 @@ public final class PageParserSayidImp implements PageParser
 
         Map<NodeType, Integer> ndtpCount = Collections.synchronizedMap(
                 new EnumMap<>(NodeType.class));
-        private final FrameNode rootNode;
+        private _FN rootNode;
+        private List<_FN> nodes = new LinkedList();
 
         Travering (Document document) throws PageParserException
         {
@@ -198,7 +220,26 @@ public final class PageParserSayidImp implements PageParser
             Capsule root = new Capsule(element, 0);
             buildFrame(root);
             cleanFrame(root);
-            rootNode = makeFramePageTree(root);
+
+            LinkedList<Capsule> fifo = new LinkedList<>();
+            LinkedList<_FN> frame = new LinkedList<>();
+            rootNode = new _FN(root);
+            fifo.add(root); frame.add(rootNode);
+            _FN _r = null;
+            do{
+                Capsule _c = fifo.removeLast();
+                _r = frame.removeLast();
+                nodes.add(_r);
+
+                List<Capsule> chi = _c.children.stream().filter(a->a.keeping)
+                        .collect(Collectors.toList());
+                List<_FN> nds = chi.stream().map(_FN::new)
+                        .collect(Collectors.toList());
+                fifo.addAll(chi);
+                frame.addAll(nds);
+                _r.children.addAll(nds);
+            }
+            while (!fifo.isEmpty());
         }
 
         void buildFrame(Capsule c)
@@ -242,24 +283,6 @@ public final class PageParserSayidImp implements PageParser
 
         _FN makeFramePageTree(Capsule c)
         {
-            LinkedList<Capsule> fifo = new LinkedList<>();
-            LinkedList<_FN> frame = new LinkedList<>();
-            fifo.add(c); frame.add(new _FN(c));
-            _FN _r = null;
-            do{
-                Capsule _c = fifo.removeLast();
-                _r = frame.removeLast();
-
-                List<Capsule> chi = _c.children.stream().filter(a->a.keeping)
-                    .collect(Collectors.toList());
-                List<_FN>     nds = chi.stream().map(_FN::new)
-                    .collect(Collectors.toList());
-                fifo.addAll(chi);
-                frame.addAll(nds);
-                _r.children.addAll(nds);
-            }
-            while (!fifo.isEmpty());
-            return _r;
         }
     }
 }
