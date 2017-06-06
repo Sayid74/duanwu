@@ -4,13 +4,14 @@ import com.ucap.duanwu.htmlpage.FrameNode;
 import com.ucap.duanwu.htmlpage.NodeType;
 
 import java.math.BigInteger;
-import java.util.*;
-import java.util.function.Function;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 
+import static com.ucap.duanwu.htmlpage.NodeType.*;
 import static java.math.BigInteger.ONE;
 import static java.math.BigInteger.ZERO;
-import static com.ucap.duanwu.htmlpage.NodeType.*;
-import static prsn.sayid.duanwu.htmlpage.PageParserSayidImp.nodeTypeOfE;
 
 /**
  * Created by emmet on 2017/5/26.
@@ -63,7 +64,8 @@ public class SimHashOfFrameNode {
 
     public BigInteger calculateSimhash()
     {
-        BigInteger r = new BigInteger(0, new byte[16]);
+        BigInteger r = ZERO;
+        System.out.println("nodes count: " + nodes.size());
         nodes.forEach(a -> vectorValues[a.getNodeType().ordinal()]++);
         for(int i = 0; i < vectorValues.length; i++)
         {
@@ -75,19 +77,35 @@ public class SimHashOfFrameNode {
                 int v1 = value & 3;
                 int v2 = (value & (15 -  3)) == 0? 0 : 1;
                 int v3 = (value & (63 - 15)) == 0? 0 : 1;
-                value = v3 << 4 + v2 << 3 + v1;
+                value = (v3 << 4) + (v2 << 3) + v1;
             }
 
-            BigInteger bv = new BigInteger(value, new byte[16]);
+            BigInteger bv = BigInteger.valueOf(value);
             NodeType t = NodeType.values()[i];
             BigInteger pow = vectors.get(t);
-            r.add(bv.multiply(pow));
+            r = r.add(bv.multiply(pow));
         }
         return r;
     }
 
-    private void processNode(FrameNode node)
+    public long distance(BigInteger other)
     {
-        vectorValues[node.getNodeType().ordinal()]++;
+        long r = 0;
+        BigInteger x0 = calculateSimhash();
+        BigInteger x1 = other;
+        BigInteger m = BigInteger.valueOf(15);
+
+        while (!x0.equals(x1))
+        {
+            BigInteger _x0 = x0.and(m);
+            BigInteger _x1 = x1.and(m);
+
+            r += _x0.subtract(_x1).pow(2).toByteArray()[0];
+
+            x0 = x0.compareTo(ZERO) > 0 ? x0.shiftRight(4) : ZERO;
+            x1 = x1.compareTo(ZERO) > 0 ? x1.shiftRight(4) : ZERO;
+        }
+
+        return r;
     }
 }

@@ -10,6 +10,7 @@ public interface FramePage {
     int countGroupByNodeType(NodeType nodeType);
     FrameNode getRoot();
     BigInteger simHash();
+    long distance(FramePage other);
     BigInteger md5();
     List<FrameNode> wideFirstTravel();
 }

@@ -8,7 +8,7 @@ public enum NodeType
     BODY_
     , DIV_, P_
     , TABLE_, TD_, TR_, TH_, THEAD_, TBODY_, TFOOT_, COL_, COLGROUP_
-    , FORM_, FRAME_, FRAMESET_,NOFRAME_, IFRAME_
+    , FORM_, FRAME_, FRAMESET_, IFRAME_
     , UL_, OL_, LI_, DL_, DT_, DD_
     , ARTICLE_, ASIDE_, CAPTION_, DETAILS_
     , MAP_, IMAG_, VIDEO_
@@ -25,6 +25,7 @@ public enum NodeType
         else if (s.toLowerCase().equals("th"))         return TH_;
         else if (s.toLowerCase().equals("thead"))      return THEAD_;
         else if (s.toLowerCase().equals("tbody"))      return TBODY_;
+        else if (s.toLowerCase().equals("tfoot"))      return TFOOT_;
         else if (s.toLowerCase().equals("col"))        return COL_;
         else if (s.toLowerCase().equals("colgroup"))   return COLGROUP_;
         else if (s.toLowerCase().equals("form"))       return FORM_;

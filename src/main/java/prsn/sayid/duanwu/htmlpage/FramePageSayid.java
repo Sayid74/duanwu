@@ -31,6 +31,11 @@ public final class FramePageSayid implements FramePage
     }
 
     @Override
+    public long distance(FramePage other) {
+        return 0;
+    }
+
+    @Override
     public BigInteger md5() {
         return null;
     }

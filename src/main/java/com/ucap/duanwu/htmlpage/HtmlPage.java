@@ -6,8 +6,6 @@ import com.ucap.commons.logger.LoggerAdapter;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.logging.Logger;
-import java.io.InputStream;
 import java.util.Arrays;
 
 /**

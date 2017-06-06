@@ -3,24 +3,23 @@ package prsn.sayid.duanwu.htmlpage;
 import com.ucap.commons.logger.LFactory;
 import com.ucap.commons.logger.LoggerAdapter;
 import com.ucap.duanwu.htmlpage.*;
-
-import static com.ucap.duanwu.htmlpage.HtmlPage.mount;
-import static com.ucap.duanwu.htmlpage.NodeType.nodeTypeOf;
-
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
 import prsn.sayid.duanwu.algorithms.SimHashOfFrameNode;
 import prsn.sayid.duanwu.htmlpage.filters.FiltersConfig;
 
-import javax.servlet.FilterConfig;
+import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
+import static com.ucap.duanwu.htmlpage.HtmlPage.mount;
+import static com.ucap.duanwu.htmlpage.NodeType.nodeTypeOf;
+import static java.math.BigInteger.ZERO;
 
 
 /**
@@ -44,10 +43,16 @@ public final class PageParserSayidImp implements PageParser
     }
 
     @Override
-    public FramePage doParse(InputStream input, String charestName)
+    public FramePage doParse(InputStream input, String charsetName, String baseUri)
             throws PageParserException
     {
-        return null;
+        Document d;
+        try {
+            d = Jsoup.parse(input, charsetName, baseUri);
+        } catch (IOException e) {
+            throw new PageParserException(e);
+        }
+        return paserDom(d);
     }
 
     @Override
@@ -72,12 +77,13 @@ public final class PageParserSayidImp implements PageParser
         free = true;
     }
 
-    private void paserDom(Document document) throws PageParserException
+    private FramePage paserDom(Document document) throws PageParserException
     {
         return new FramePage()
         {
             Travering t = new Travering(document);
             final FrameNode root = t.rootNode;
+            SimHashOfFrameNode simhash = new SimHashOfFrameNode(t.nodes);
             @Override
             public int countGroupByNodeType(NodeType nodeType)
             {
@@ -91,7 +97,7 @@ public final class PageParserSayidImp implements PageParser
             @Override
             public BigInteger simHash()
             {
-                return (new SimHashOfFrameNode(t.nodes)).calculateSimhash();
+                return simhash.calculateSimhash();
             }
             @Override
             public BigInteger md5()
@@ -99,19 +105,35 @@ public final class PageParserSayidImp implements PageParser
                 List<Byte> data = t.nodes.stream()
                         .map(a->(byte)(a.nodeType.ordinal()))
                         .collect(Collectors.toList());
-                try {
+                try
+                {
                     MessageDigest md5 = MessageDigest.getInstance("md5");
                     byte d[] = new byte[data.size()];
                     for(int i = 0; i < d.length; i++) d[i] = data.get(i);
                     return new BigInteger(md5.digest(d));
-                } catch (NoSuchAlgorithmException e) {
+                }
+                catch (NoSuchAlgorithmException e)
+                {
+                    L.error(e);
+                    return ZERO;
                 }
             }
             @Override
             public List<FrameNode> wideFirstTravel()
             {
+                return t.nodes.stream().map(a->(FrameNode)a)
+                        .collect(Collectors.toList());
             }
-        }
+            @Override
+            public long distance(FramePage other)
+            {
+                if (other == null)
+                {
+                    return simhash.distance(ZERO);
+                }
+                return simhash.distance(other.simHash());
+            }
+        };
     }
 
     private class Travering
@@ -184,7 +206,7 @@ public final class PageParserSayidImp implements PageParser
                 {
                     Map<NodeType, Integer> ncnt = Travering.this.ndtpCount;
                     int i = ncnt.containsKey(nodeType)?
-                        0:  ncnt.get(nodeType);
+                        ncnt.get(nodeType): 0;
                     ncnt.put(nodeType, ++i);
                 }
             }
@@ -231,6 +253,8 @@ public final class PageParserSayidImp implements PageParser
                 _r = frame.removeLast();
                 nodes.add(_r);
 
+                if (_c.children == null || _c.children.isEmpty()) continue;
+
                 List<Capsule> chi = _c.children.stream().filter(a->a.keeping)
                         .collect(Collectors.toList());
                 List<_FN> nds = chi.stream().map(_FN::new)
@@ -247,7 +271,7 @@ public final class PageParserSayidImp implements PageParser
             if (c.level == PageParserSayidImp.this.deepth) return;
 
             Element _e = c.elment;
-            List<Element> _es = new LinkedList(_e.getAllElements().stream()
+            List<Element> _es = new LinkedList(_e.children().stream()
                     .collect(Collectors.toList()));
             if (_es.isEmpty()) return;
 
@@ -255,7 +279,7 @@ public final class PageParserSayidImp implements PageParser
             do {
                 Element e = _es.remove(0);
                 if (nodeTypeOfE(e) == null)
-                    _es.addAll(e.getAllElements().stream()
+                    _es.addAll(e.children().stream()
                             .collect(Collectors.toList()));
                 else
                     _o.add(e);
@@ -279,10 +303,6 @@ public final class PageParserSayidImp implements PageParser
             c.keeping = FiltersConfig.doFilter(c);
             if (c.children == null || c.children.isEmpty()) return;
             c.children.forEach(a -> cleanFrame(a));
-        }
-
-        _FN makeFramePageTree(Capsule c)
-        {
         }
     }
 }

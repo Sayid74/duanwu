@@ -14,6 +14,7 @@ import static prsn.sayid.duanwu.htmlpage.PageParserSayidImp.nodeTypeOfE;
 public class FilterPSamleCSS implements FilterUtil {
     @Override
     public boolean doFilter(FrameNodeCapsule element) {
+        if(element.leftSibling()== null) return true;
         Element e = element.leftSibling().getElment();
         NodeType t = nodeTypeOfE(e);
         if (t!= P_) return true;

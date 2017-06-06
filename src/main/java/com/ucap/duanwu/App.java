@@ -1,15 +1,11 @@
 package com.ucap.duanwu;
 
+import com.ucap.duanwu.htmlpage.FramePage;
 import com.ucap.duanwu.htmlpage.HtmlPage;
 import com.ucap.duanwu.htmlpage.PageParser;
-import com.ucap.duanwu.htmlpage.FramePage;
-import prsn.sayid.duanwu.htmlpage.PageParserSayidImp;
-import java.net.URL;
+
 import java.io.InputStream;
-import java.io.Reader;
-import java.io.InputStreamReader;
-import java.io.BufferedReader;
-import java.io.Console;
+import java.net.URL;
 
 public class App
 {
@@ -36,11 +32,14 @@ public class App
         try(InputStream input = (new URL(url)).openStream())
         {
             PageParser pageParser = HtmlPage.makePageParser();
-            FramePage frame = pageParser.doParse(input, "UTF-8");
+            pageParser.setParserDeepth(5);
+            FramePage frame = pageParser.doParse(input, "UTF-8", url);
             if (frame == null)
                 System.out.println("Parser resualt is null!");
-            else
+            else {
                 System.out.println("SimHash: " + frame.simHash());
+                System.out.println("Distance : " + frame.distance(null));
+            }
         }
     }
 }

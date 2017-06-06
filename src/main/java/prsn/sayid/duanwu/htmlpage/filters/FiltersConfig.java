@@ -3,15 +3,14 @@ package prsn.sayid.duanwu.htmlpage.filters;
 import com.ucap.commons.logger.LFactory;
 import com.ucap.commons.logger.LoggerAdapter;
 import com.ucap.duanwu.htmlpage.NodeType;
-import org.jsoup.nodes.Element;
 import prsn.sayid.duanwu.htmlpage.FilterUtil;
 import prsn.sayid.duanwu.htmlpage.FrameNodeCapsule;
 
-import static java.util.Collections.synchronizedMap;
-import static com.ucap.duanwu.htmlpage.NodeType.*;
-import static prsn.sayid.duanwu.htmlpage.PageParserSayidImp.nodeTypeOfE;
-
 import java.util.*;
+
+import static com.ucap.duanwu.htmlpage.NodeType.P_;
+import static java.util.Collections.synchronizedMap;
+import static prsn.sayid.duanwu.htmlpage.PageParserSayidImp.nodeTypeOfE;
 
 /**
  * Created by emmet on 2017/5/24.
@@ -21,15 +20,21 @@ public class FiltersConfig
     /**
      * Configer
      */
+
+    private final static FiltersConfig _SELF;
     static
     {
-        put(FilterPSamleCSS.class, P_);
+        synchronized (FiltersConfig.class)
+        {
+            _SELF = new FiltersConfig();
+            _SELF.put(FilterPSamleCSS.class, P_);
+        }
     }
 
     /************************************************************************/
 
-    private static  LoggerAdapter L = LFactory.makeL(FiltersConfig.class);
-    private static Map<NodeType, Set<Class<? extends FilterUtil>>> config
+    private static LoggerAdapter L = LFactory.makeL(FiltersConfig.class);
+    private final Map<NodeType, Set<Class<? extends FilterUtil>>> config
         = synchronizedMap(new EnumMap(NodeType.class));
 
     public static boolean doFilter(FrameNodeCapsule element)
@@ -49,7 +54,7 @@ public class FiltersConfig
         return true;
     }
 
-    synchronized private static void put(Class<? extends FilterUtil> utilClass
+    private void put(Class<? extends FilterUtil> utilClass
             , NodeType type)
     {
         Set<Class<? extends FilterUtil>> utilClasses = config.get(type);
@@ -60,10 +65,9 @@ public class FiltersConfig
         utilClasses.add(utilClass);
     }
 
-    private static Set<Class <? extends FilterUtil>>
-        getUtilsByNodeType(NodeType nodeType)
+    private static Set<Class <? extends FilterUtil>> getUtilsByNodeType(NodeType nodeType)
     {
-        Set<Class<? extends FilterUtil>> utils = config.get(nodeType);
+        Set<Class<? extends FilterUtil>> utils = _SELF.config.get(nodeType);
         return utils == null? Collections.emptySet():
                 Collections.unmodifiableSet(utils);
     }
