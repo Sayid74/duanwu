@@ -79,7 +79,7 @@ public class SimHashOfFrameNode {
                 int v1 = value & 3;
                 int v2 = (value & (15 -  3)) == 0? 0 : 1;
                 int v3 = (value & (63 - 15)) == 0? 0 : 1;
-                value = (v3 << 4) + (v2 << 3) + v1;
+                value = (v3 << 3) + (v2 << 2) + v1;
             }
 
             BigInteger bv = BigInteger.valueOf(value);
