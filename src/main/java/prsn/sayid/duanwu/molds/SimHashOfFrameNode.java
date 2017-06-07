@@ -4,10 +4,7 @@ import com.ucap.duanwu.htmlpage.FrameNode;
 import com.ucap.duanwu.htmlpage.NodeType;
 
 import java.math.BigInteger;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.ucap.duanwu.htmlpage.NodeType.*;
 import static java.math.BigInteger.ONE;
@@ -66,7 +63,12 @@ public class SimHashOfFrameNode {
     {
         BigInteger r = ZERO;
         System.out.println("nodes count: " + nodes.size());
-        nodes.forEach(a -> vectorValues[a.getNodeType().ordinal()]++);
+        nodes.forEach(a -> vectorValues[a.getNodeType().ordinal()]
+                += a.getLevel());
+
+        for (int i = 0; i < vectorValues.length; i++)
+            System.out.println ("vector[" + i + "] = " + vectorValues[i]) ;
+
         for(int i = 0; i < vectorValues.length; i++)
         {
             int value = vectorValues[i];
@@ -100,7 +102,7 @@ public class SimHashOfFrameNode {
             BigInteger _x0 = x0.and(m);
             BigInteger _x1 = x1.and(m);
 
-            r += _x0.subtract(_x1).pow(2).toByteArray()[0];
+            r += _x0.subtract(_x1).pow(2).intValue();
 
             x0 = x0.compareTo(ZERO) > 0 ? x0.shiftRight(4) : ZERO;
             x1 = x1.compareTo(ZERO) > 0 ? x1.shiftRight(4) : ZERO;
