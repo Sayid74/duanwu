@@ -6,7 +6,7 @@ import com.ucap.duanwu.htmlpage.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import prsn.sayid.duanwu.algorithms.SimHashOfFrameNode;
+import prsn.sayid.duanwu.molds.SimHashOfFrameNode;
 import prsn.sayid.duanwu.htmlpage.filters.FiltersConfig;
 
 import java.io.IOException;

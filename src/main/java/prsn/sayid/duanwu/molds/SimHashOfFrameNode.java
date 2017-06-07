@@ -1,4 +1,4 @@
-package prsn.sayid.duanwu.algorithms;
+package prsn.sayid.duanwu.molds;
 
 import com.ucap.duanwu.htmlpage.FrameNode;
 import com.ucap.duanwu.htmlpage.NodeType;
