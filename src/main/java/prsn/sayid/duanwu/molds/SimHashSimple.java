@@ -18,37 +18,37 @@ public class SimHashSimple
 {
     private static final Map<NodeType, Integer> vectors =
             new EnumMap<NodeType, Integer>(NodeType.class){{
-                put(BODY_,        1);
-                put(DIV_,         2);
-                put(P_,           3);
-                put(TABLE_,       5);
-                put(TD_,          7);
-                put(TR_,          11);
-                put(TH_,          13);
-                put(THEAD_,       17);
-                put(TBODY_,       19);
-                put(TFOOT_,       23);
-                put(COL_,         29);
-                put(COLGROUP_,    31);
-                put(FORM_,        37);
-                put(FRAME_,       41);
-                put(FRAMESET_,    47);
-                put(IFRAME_,      53);
-                put(UL_,          59);
-                put(OL_,          61);
-                put(LI_,          67);
-                put(DL_,          71);
-                put(DT_,          73);
-                put(DD_,          79);
-                put(ARTICLE_,     83);
-                put(ASIDE_,       89);
-                put(CAPTION_,     97);
-                put(DETAILS_,     101);
-                put(MAP_,         103);
-                put(IMAG_,        107);
-                put(VIDEO_,       109);
-                put(FIGURE_,      113);
-                put(FIGCAPTION_,  127);
+                put(BODY_,        101);
+                put(DIV_,         103);
+                put(P_,           107);
+                put(TABLE_,       109);
+                put(TD_,          113);
+                put(TR_,          127);
+                put(TH_,          131);
+                put(THEAD_,       139);
+                put(TBODY_,       149);
+                put(TFOOT_,       151);
+                put(COL_,         163);
+                put(COLGROUP_,    167);
+                put(FORM_,        173);
+                put(FRAME_,       179);
+                put(FRAMESET_,    181);
+                put(IFRAME_,      191);
+                put(UL_,          193);
+                put(OL_,          199);
+                put(LI_,          211);
+                put(DL_,          223);
+                put(DT_,          227);
+                put(DD_,          229);
+                put(ARTICLE_,     233);
+                put(ASIDE_,       239);
+                put(CAPTION_,     241);
+                put(DETAILS_,     251);
+                put(MAP_,         257);
+                put(IMAG_,        263);
+                put(VIDEO_,       269);
+                put(FIGURE_,      271);
+                put(FIGCAPTION_,  281);
             }};
 
     private List<FrameNode> nodes;
@@ -113,6 +113,16 @@ public class SimHashSimple
     {
         int level = node.getLevel();
         NodeType nodeTp = node.getNodeType();
+        String id = node.getID();
+        Set<String> clzNms = node.getTagClassNames();
+        int len = clzNms.stream().mapToInt(String::length).sum() + id.length() + 1;
+        int source[] = new int[len];
+        source[0] = (int) Math.pow(vectors.get(nodeTp), 2.0);
+        source[1] = (id);
+        for (int i = 2; i < source.length; i++)
+        {
+            source[i] = (int)
+        }
 
         char[] sourceArray = source.toCharArray();
         BigInteger x = BigInteger.valueOf((long)sourceArray[0]).shiftLeft(7);

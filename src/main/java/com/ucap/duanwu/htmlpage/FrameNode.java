@@ -5,9 +5,12 @@ package com.ucap.duanwu.htmlpage;
  */
 
 import java.util.List;
+import java.util.Set;
 
 public interface FrameNode {
-    public NodeType getNodeType();
-    public List<FrameNode> getChildren();
-    public int getLevel();
+    NodeType getNodeType();
+    List<FrameNode> getChildren();
+    int getLevel();
+    String getID();
+    Set<String> getTagClassNames();
 }

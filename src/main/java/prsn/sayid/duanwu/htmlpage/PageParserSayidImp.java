@@ -29,8 +29,8 @@ public final class PageParserSayidImp implements PageParser
 {
     private static LoggerAdapter L = LFactory.makeL(HtmlPage.class);
 
-    int deepth;
-    boolean free = false;
+    private int deepth;
+    private boolean free = false;
 
     static
     {
@@ -52,7 +52,9 @@ public final class PageParserSayidImp implements PageParser
         } catch (IOException e) {
             throw new PageParserException(e);
         }
-        return paserDom(d);
+        FramePage r = paserDom(d);
+        free();
+        return r;
     }
 
     @Override
@@ -69,11 +71,10 @@ public final class PageParserSayidImp implements PageParser
 
     @Override
     public boolean isFree() {
-        return false;
+        return free;
     }
 
-    @Override
-    public void free() {
+    private void free() {
         free = true;
     }
 
@@ -121,8 +122,7 @@ public final class PageParserSayidImp implements PageParser
             @Override
             public List<FrameNode> wideFirstTravel()
             {
-                return t.nodes.stream().map(a->(FrameNode)a)
-                        .collect(Collectors.toList());
+                return new ArrayList<>(t.nodes);
             }
             @Override
             public long distance(FramePage other)
@@ -194,19 +194,23 @@ public final class PageParserSayidImp implements PageParser
 
         public class _FN implements FrameNode
         {
-            private final List<_FN> children = new ArrayList();
+            private final List<_FN> children = new ArrayList<>();
             final NodeType nodeType;
             final int level;
+            String id;
+            Set<String> classNames;
 
             _FN(Capsule c)
             {
                 this.level = c.getLevel();
                 this.nodeType = nodeTypeOfE(c.elment);
+                this.id = c.elment.id();
+                this.classNames = c.elment.classNames();
+
                 synchronized (Travering.this.ndtpCount)
                 {
                     Map<NodeType, Integer> ncnt = Travering.this.ndtpCount;
-                    int i = ncnt.containsKey(nodeType)?
-                        ncnt.get(nodeType): 0;
+                    int i = ncnt.getOrDefault(nodeType, 0);
                     ncnt.put(nodeType, ++i);
                 }
             }
@@ -227,12 +231,24 @@ public final class PageParserSayidImp implements PageParser
             public int getLevel() {
                 return level;
             }
+
+            @Override
+            public String getID()
+            {
+                return id;
+            }
+
+            @Override
+            public Set<String> getTagClassNames()
+            {
+                return classNames;
+            }
         }
 
-        Map<NodeType, Integer> ndtpCount = Collections.synchronizedMap(
+        final Map<NodeType, Integer> ndtpCount = Collections.synchronizedMap(
                 new EnumMap<>(NodeType.class));
         private _FN rootNode;
-        private List<_FN> nodes = new LinkedList();
+        private LinkedList<FrameNode> nodes = new LinkedList<>();
 
         Travering (Document document) throws PageParserException
         {
@@ -247,7 +263,7 @@ public final class PageParserSayidImp implements PageParser
             LinkedList<_FN> frame = new LinkedList<>();
             rootNode = new _FN(root);
             fifo.add(root); frame.add(rootNode);
-            _FN _r = null;
+            _FN _r;
             do{
                 Capsule _c = fifo.removeLast();
                 _r = frame.removeLast();
@@ -271,16 +287,14 @@ public final class PageParserSayidImp implements PageParser
             if (c.level == PageParserSayidImp.this.deepth) return;
 
             Element _e = c.elment;
-            List<Element> _es = new LinkedList(_e.children().stream()
-                    .collect(Collectors.toList()));
+            List<Element> _es = new ArrayList<>(new ArrayList<>(_e.children()));
             if (_es.isEmpty()) return;
 
             List<Element> _o = new LinkedList<>();
             do {
                 Element e = _es.remove(0);
                 if (nodeTypeOfE(e) == null)
-                    _es.addAll(e.children().stream()
-                            .collect(Collectors.toList()));
+                    _es.addAll(new ArrayList<>(e.children()));
                 else
                     _o.add(e);
             } while (!_es.isEmpty());
@@ -295,14 +309,14 @@ public final class PageParserSayidImp implements PageParser
                 ci_1.leftSibling  = ci_0;
                 ci_0.father = ci_1.father = c;
             }
-            c.children.forEach(a -> buildFrame(a));
+            c.children.forEach(this::buildFrame);
         }
 
         void cleanFrame(Capsule c)
         {
             c.keeping = FiltersConfig.doFilter(c);
             if (c.children == null || c.children.isEmpty()) return;
-            c.children.forEach(a -> cleanFrame(a));
+            c.children.forEach(this::cleanFrame);
         }
     }
 }
