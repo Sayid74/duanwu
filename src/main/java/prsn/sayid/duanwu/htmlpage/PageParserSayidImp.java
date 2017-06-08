@@ -97,7 +97,7 @@ public final class PageParserSayidImp implements PageParser
             @Override
             public BigInteger simHash()
             {
-                return simhash.calculateSimhash();
+                return simhash.calculate();
             }
             @Override
             public BigInteger md5()

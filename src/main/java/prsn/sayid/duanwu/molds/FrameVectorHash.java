@@ -59,7 +59,7 @@ public class FrameVectorHash {
         vectorValues = new int[vectors.size()];
     }
 
-    public BigInteger calculateSimhash()
+    public BigInteger calculate()
     {
         BigInteger r = ZERO;
         System.out.println("nodes count: " + nodes.size());
@@ -93,7 +93,7 @@ public class FrameVectorHash {
     public long distance(BigInteger other)
     {
         long r = 0;
-        BigInteger x0 = calculateSimhash();
+        BigInteger x0 = calculate();
         BigInteger x1 = other;
         BigInteger m = BigInteger.valueOf(15);
 

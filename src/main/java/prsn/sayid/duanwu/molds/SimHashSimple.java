@@ -4,43 +4,78 @@ package prsn.sayid.duanwu.molds;
  * Created by emmet on 2017/6/7.
  */
 
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.StringTokenizer;
+import com.ucap.duanwu.htmlpage.FrameNode;
+import com.ucap.duanwu.htmlpage.NodeType;
 
+import java.math.BigInteger;
+import java.util.*;
+
+import static com.ucap.duanwu.htmlpage.NodeType.*;
 import static java.math.BigInteger.ONE;
 import static java.math.BigInteger.ZERO;
 
 public class SimHashSimple
 {
-    private String tokens;
+    private static final Map<NodeType, Integer> vectors =
+            new EnumMap<NodeType, Integer>(NodeType.class){{
+                put(BODY_,        1);
+                put(DIV_,         2);
+                put(P_,           3);
+                put(TABLE_,       5);
+                put(TD_,          7);
+                put(TR_,          11);
+                put(TH_,          13);
+                put(THEAD_,       17);
+                put(TBODY_,       19);
+                put(TFOOT_,       23);
+                put(COL_,         29);
+                put(COLGROUP_,    31);
+                put(FORM_,        37);
+                put(FRAME_,       41);
+                put(FRAMESET_,    47);
+                put(IFRAME_,      53);
+                put(UL_,          59);
+                put(OL_,          61);
+                put(LI_,          67);
+                put(DL_,          71);
+                put(DT_,          73);
+                put(DD_,          79);
+                put(ARTICLE_,     83);
+                put(ASIDE_,       89);
+                put(CAPTION_,     97);
+                put(DETAILS_,     101);
+                put(MAP_,         103);
+                put(IMAG_,        107);
+                put(VIDEO_,       109);
+                put(FIGURE_,      113);
+                put(FIGCAPTION_,  127);
+            }};
+
+    private List<FrameNode> nodes;
     private BigInteger intSimHash;
     private String strSimHash;
     private int hashbits = 64;
 
-    public SimHashSimple(String tokens)
+    public SimHashSimple(List<FrameNode> nodes)
     {
-        this.tokens = tokens;
-        simHash();
+        this.nodes = nodes;
+        calculate();
     }
 
-    public SimHashSimple(String tokens, int hashbits)
+    public SimHashSimple(List<FrameNode> tokens, int hashbits)
     {
-        this.tokens = tokens;
+        this.nodes = tokens;
         this.hashbits = hashbits;
-        simHash();
+        calculate();
     }
 
-    public void simHash()
+    public void calculate()
     {
         int[] v = new int[hashbits];
-        StringTokenizer stringTokens = new StringTokenizer(tokens);
-        while(stringTokens.hasMoreTokens())
+
+        for(FrameNode n: nodes)
         {
-            String temp = stringTokens.nextToken();
-            BigInteger t = hash(temp);
+            BigInteger t = hash(node);
             for (int i = 0; i < this.hashbits; i++)
             {
                 BigInteger bitmask = ONE.shiftLeft(i);
@@ -74,10 +109,10 @@ public class SimHashSimple
         intSimHash = fingerprint;
     }
 
-    private BigInteger hash(String source)
+    private BigInteger hash(FrameNode node)
     {
-        if (source == null || source.isEmpty())
-            return ZERO;
+        int level = node.getLevel();
+        NodeType nodeTp = node.getNodeType();
 
         char[] sourceArray = source.toCharArray();
         BigInteger x = BigInteger.valueOf((long)sourceArray[0]).shiftLeft(7);
@@ -108,7 +143,7 @@ public class SimHashSimple
         return tot;
     }
 
-    public int getDistance(String str1, String str2)
+    public long distance(String str1, String str2)
     {
         int distance;
         if (str1.length() != str2.length())
@@ -169,10 +204,10 @@ public class SimHashSimple
         hash1.subByDistance(hash3, 4);
 
         System.out.println("==========================================");
-        int dis = hash1.getDistance(hash1.strSimHash, hash2.strSimHash);
+        int dis = hash1.distance(hash1.strSimHash, hash2.strSimHash);
         System.out.println(hash1.hammingDistance(hash2) + " " + dis);
 
-        int dis2 = hash1.getDistance(hash1.strSimHash, hash3.strSimHash);
+        int dis2 = hash1.distance(hash1.strSimHash, hash3.strSimHash);
         System.out.print(hash1.hammingDistance(hash3) + " " + dis2);
     }
 }
