@@ -6,7 +6,7 @@ import com.ucap.duanwu.htmlpage.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import prsn.sayid.duanwu.molds.SimHashOfFrameNode;
+import prsn.sayid.duanwu.molds.FrameVectorHash;
 import prsn.sayid.duanwu.htmlpage.filters.FiltersConfig;
 
 import java.io.IOException;
@@ -83,7 +83,7 @@ public final class PageParserSayidImp implements PageParser
         {
             Travering t = new Travering(document);
             final FrameNode root = t.rootNode;
-            SimHashOfFrameNode simhash = new SimHashOfFrameNode(t.nodes);
+            FrameVectorHash simhash = new FrameVectorHash(t.nodes);
             @Override
             public int countGroupByNodeType(NodeType nodeType)
             {

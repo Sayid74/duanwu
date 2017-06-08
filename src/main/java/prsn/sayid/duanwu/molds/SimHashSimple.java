@@ -33,8 +33,6 @@ public class SimHashSimple
         simHash();
     }
 
-    HashMap wordMap = new HashMap();
-
     public void simHash()
     {
         int[] v = new int[hashbits];
@@ -56,6 +54,7 @@ public class SimHashSimple
                 }
             }
         }
+
         BigInteger fingerprint = ZERO;
         StringBuffer simHashBuffer = new StringBuffer();
         for (int i = 0; i < this.hashbits; i++)
@@ -82,7 +81,7 @@ public class SimHashSimple
 
         char[] sourceArray = source.toCharArray();
         BigInteger x = BigInteger.valueOf((long)sourceArray[0]).shiftLeft(7);
-        BigInteger m = BigInteger.valueOf(1000003);
+        BigInteger m = BigInteger.valueOf(1000003); // A big prime number
         BigInteger mask = BigInteger.valueOf(2).pow(hashbits).subtract(ONE);
 
         for (char item: sourceArray)
