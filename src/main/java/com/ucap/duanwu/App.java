@@ -37,7 +37,7 @@ public class App
             if (frame == null)
                 System.out.println("Parser resualt is null!");
             else {
-                System.out.println("SimHash: " + frame.simHash());
+                System.out.println("SimHash: " + frame.eigenvalue());
                 System.out.println("Distance : " + frame.distance(null));
             }
         }

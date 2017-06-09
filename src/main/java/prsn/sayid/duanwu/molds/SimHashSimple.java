@@ -14,7 +14,7 @@ import static com.ucap.duanwu.htmlpage.NodeType.*;
 import static java.math.BigInteger.ONE;
 import static java.math.BigInteger.ZERO;
 
-public class SimHashSimple
+public class SimHashSimple implements EigenvalueCalculator
 {
     private static final Map<NodeType, Integer> vectors =
             new EnumMap<NodeType, Integer>(NodeType.class){{
@@ -53,7 +53,6 @@ public class SimHashSimple
 
     private List<FrameNode> nodes;
     private BigInteger intSimHash;
-    private String strSimHash;
     private int hashbits = 64;
 
     public SimHashSimple(List<FrameNode> nodes)
@@ -69,80 +68,28 @@ public class SimHashSimple
         calculate();
     }
 
-    public void calculate()
+    @Override
+    public BigInteger calculate()
     {
         int[] v = new int[hashbits];
 
-        for(FrameNode n: nodes)
-        {
-            BigInteger t = hash(node);
-            for (int i = 0; i < this.hashbits; i++)
-            {
-                BigInteger bitmask = ONE.shiftLeft(i);
-                if (t.and(bitmask).signum() != 0)
-                {
-                    v[i] += 1;
-                }
-                else
-                {
-                    v[i] -= 1;
-                }
-            }
-        }
+        nodes.forEach(a->{
+            BigInteger t = hash(a);
+            for (int i = 0; i < hashbits; i++)
+                v[i] += t.testBit(i) ? a.getLevel() : 0;
+        });
 
-        BigInteger fingerprint = ZERO;
-        StringBuffer simHashBuffer = new StringBuffer();
+        intSimHash = ZERO;
         for (int i = 0; i < this.hashbits; i++)
-        {
-            if (v[i] >= 0)
-            {
-                fingerprint = fingerprint.add(ONE.shiftLeft(i));
-                simHashBuffer.append(1);
-            }
-            else
-            {
-                simHashBuffer.append(0);
-            }
-        }
-        strSimHash = simHashBuffer.toString();
-        System.out.println(strSimHash + " length " + strSimHash.length());
-        intSimHash = fingerprint;
+            intSimHash = intSimHash.setBit(i);
+
+        return intSimHash;
     }
 
-    private BigInteger hash(FrameNode node)
+    @Override
+    public int distance(BigInteger other)
     {
-        int level = node.getLevel();
-        NodeType nodeTp = node.getNodeType();
-        String id = node.getID();
-        Set<String> clzNms = node.getTagClassNames();
-        int len = clzNms.stream().mapToInt(String::length).sum() + id.length() + 1;
-        int source[] = new int[len];
-        source[0] = (int) Math.pow(vectors.get(nodeTp), 2.0);
-        source[1] = (id);
-        for (int i = 2; i < source.length; i++)
-        {
-            source[i] = (int)
-        }
-
-        char[] sourceArray = source.toCharArray();
-        BigInteger x = BigInteger.valueOf((long)sourceArray[0]).shiftLeft(7);
-        BigInteger m = BigInteger.valueOf(1000003); // A big prime number
-        BigInteger mask = BigInteger.valueOf(2).pow(hashbits).subtract(ONE);
-
-        for (char item: sourceArray)
-        {
-            BigInteger temp = BigInteger.valueOf((long)item);
-            x = x.multiply(m).xor(temp).and(mask);
-        }
-        x = x.xor(BigInteger.valueOf(source.length()));
-        if (x.equals(ONE.negate()))
-            x = BigInteger.valueOf(-2);
-        return x;
-    }
-
-    private int hammingDistance(SimHashSimple other)
-    {
-        BigInteger x = intSimHash.xor(other.intSimHash);
+        BigInteger x = intSimHash.xor(other);
         int tot = 0;
 
         while (x.signum() != 0)
@@ -152,24 +99,10 @@ public class SimHashSimple
         }
         return tot;
     }
-
-    public long distance(String str1, String str2)
+    @Override
+    public BigInteger getEigenvalue()
     {
-        int distance;
-        if (str1.length() != str2.length())
-        {
-            distance = -1;
-        }
-        else
-        {
-            distance = 0;
-            for (int i = 0; i < str1.length(); i++)
-            {
-                if (str1.charAt(i) != str2.charAt(i))
-                    distance++;
-            }
-        }
-        return distance;
+        return intSimHash;
     }
 
     public List subByDistance(SimHashSimple simHash, int distance)
@@ -196,28 +129,33 @@ public class SimHashSimple
         return characters;
     }
 
-    public static void main(String[] args)
+    private BigInteger hash(FrameNode node)
     {
-        String s = "This is a test string for testing";
-        SimHashSimple hash1 = new SimHashSimple(s, 128);
-        System.out.println(hash1.intSimHash + " " + hash1.intSimHash.bitCount());
-        hash1.subByDistance(hash1, 3);
+        NodeType nodeTp = node.getNodeType();
+        String id = node.getID();
+        Set<String> clzNms = node.getTagClassNames();
+        int len = clzNms.stream().mapToInt(String::length).sum();
+        final StringBuffer clzNmsBuf = new StringBuffer(len);
+        clzNms.stream().forEach(clzNmsBuf::append);
+        len += (id.length() + 1);
+        char data[] = new char[len];
+        data[0] = (char) Math.pow(vectors.get(nodeTp), 2.0);
+        System.arraycopy(id.toCharArray(), 0, data, 1, id.length());
+        clzNmsBuf.getChars(0,clzNmsBuf.length(), data, id.length() + 1);
 
-        s = "This is a test string for testing , This is a test string for testing abcdef";
-        SimHashSimple hash2 = new SimHashSimple(s, 128);
-        System.out.println(hash2.intSimHash + " " + hash2.intSimHash.bitCount());
-        hash1.subByDistance(hash2, 3);
+        BigInteger x = BigInteger.valueOf((long)data[0]).shiftLeft(7);
+        BigInteger m = BigInteger.valueOf(1000003); // A big prime number
+        BigInteger mask = BigInteger.valueOf(2).pow(hashbits).subtract(ONE);
 
-        s = "This is a test string for testing als";
-        SimHashSimple hash3 = new SimHashSimple(s, 64);
-        System.out.println(hash3.intSimHash + " " + hash3.intSimHash.bitCount());
-        hash1.subByDistance(hash3, 4);
-
-        System.out.println("==========================================");
-        int dis = hash1.distance(hash1.strSimHash, hash2.strSimHash);
-        System.out.println(hash1.hammingDistance(hash2) + " " + dis);
-
-        int dis2 = hash1.distance(hash1.strSimHash, hash3.strSimHash);
-        System.out.print(hash1.hammingDistance(hash3) + " " + dis2);
+        for (char item: data)
+        {
+            BigInteger temp = BigInteger.valueOf((long)item);
+            x = x.multiply(m).xor(temp).and(mask);
+        }
+        x = x.xor(BigInteger.valueOf(data.length));
+        if (x.equals(ONE.negate()))
+            x = BigInteger.valueOf(-2);
+        return x;
     }
+
 }

@@ -9,7 +9,7 @@ import java.util.List;
 public interface FramePage {
     int countGroupByNodeType(NodeType nodeType);
     FrameNode getRoot();
-    BigInteger simHash();
+    BigInteger eigenvalue();
     long distance(FramePage other);
     BigInteger md5();
     List<FrameNode> wideFirstTravel();

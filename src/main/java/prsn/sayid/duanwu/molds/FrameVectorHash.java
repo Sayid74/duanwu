@@ -13,7 +13,8 @@ import static java.math.BigInteger.ZERO;
 /**
  * Created by emmet on 2017/5/26.
  */
-public class FrameVectorHash {
+public class FrameVectorHash implements EigenvalueCalculator
+{
     private static final Map<NodeType, BigInteger> vectors =
             new EnumMap<NodeType, BigInteger>(NodeType.class){{
                 put(BODY_,        ZERO);
@@ -52,6 +53,7 @@ public class FrameVectorHash {
     //private Function<FrameNode, Integer> powerCal;
     private List<FrameNode> nodes;
     private int vectorValues[] = new int[vectors.size()];
+    private BigInteger eigenvalue;
 
     public FrameVectorHash(List<? extends FrameNode> nodes)
     {
@@ -61,7 +63,7 @@ public class FrameVectorHash {
 
     public BigInteger calculate()
     {
-        BigInteger r = ZERO;
+        eigenvalue = ZERO;
         System.out.println("nodes count: " + nodes.size());
         nodes.forEach(a -> vectorValues[a.getNodeType().ordinal()]
                 += a.getLevel());
@@ -85,15 +87,16 @@ public class FrameVectorHash {
             BigInteger bv = BigInteger.valueOf(value);
             NodeType t = NodeType.values()[i];
             BigInteger pow = vectors.get(t);
-            r = r.add(bv.multiply(pow));
+            eigenvalue = eigenvalue.add(bv.multiply(pow));
         }
-        return r;
+        return eigenvalue;
     }
 
-    public long distance(BigInteger other)
+    @Override
+    public int distance(BigInteger other)
     {
-        long r = 0;
-        BigInteger x0 = calculate();
+        int r = 0;
+        BigInteger x0 = eigenvalue;
         BigInteger x1 = other;
         BigInteger m = BigInteger.valueOf(15);
 
@@ -110,4 +113,10 @@ public class FrameVectorHash {
 
         return r;
     }
+
+    @Override
+    public BigInteger getEigenvalue() {
+        return eigenvalue;
+    }
+
 }

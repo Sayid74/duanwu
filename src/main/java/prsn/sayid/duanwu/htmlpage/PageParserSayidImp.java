@@ -6,8 +6,9 @@ import com.ucap.duanwu.htmlpage.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import prsn.sayid.duanwu.molds.FrameVectorHash;
+import prsn.sayid.duanwu.molds.EigenvalueCalculator;
 import prsn.sayid.duanwu.htmlpage.filters.FiltersConfig;
+import prsn.sayid.duanwu.molds.SimHashSimple;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,6 +38,12 @@ public final class PageParserSayidImp implements PageParser
         mount(PageParserSayidImp.class);
     }
 
+    /**
+     * Node type of e node type.
+     *
+     * @param element the element
+     * @return the node type
+     */
     public static NodeType nodeTypeOfE(Element element)
     {
         return nodeTypeOf(element.tag().getName());
@@ -47,12 +54,15 @@ public final class PageParserSayidImp implements PageParser
             throws PageParserException
     {
         Document d;
-        try {
+        try
+        {
             d = Jsoup.parse(input, charsetName, baseUri);
-        } catch (IOException e) {
+        }
+        catch (IOException e)
+        {
             throw new PageParserException(e);
         }
-        FramePage r = paserDom(d);
+        FramePage r = parserDom(d);
         free();
         return r;
     }
@@ -70,21 +80,23 @@ public final class PageParserSayidImp implements PageParser
     }
 
     @Override
-    public boolean isFree() {
+    public boolean isFree()
+    {
         return free;
     }
 
-    private void free() {
+    private void free()
+    {
         free = true;
     }
 
-    private FramePage paserDom(Document document) throws PageParserException
+    private FramePage parserDom(Document document) throws PageParserException
     {
         return new FramePage()
         {
             Travering t = new Travering(document);
             final FrameNode root = t.rootNode;
-            FrameVectorHash simhash = new FrameVectorHash(t.nodes);
+            EigenvalueCalculator calculator = new SimHashSimple(t.nodes);
             @Override
             public int countGroupByNodeType(NodeType nodeType)
             {
@@ -96,15 +108,15 @@ public final class PageParserSayidImp implements PageParser
                 return root;
             }
             @Override
-            public BigInteger simHash()
+            public BigInteger eigenvalue()
             {
-                return simhash.calculate();
+                return calculator.calculate();
             }
             @Override
             public BigInteger md5()
             {
                 List<Byte> data = t.nodes.stream()
-                        .map(a->(byte)(a.nodeType.ordinal()))
+                        .map(a->(byte)(a.getNodeType().ordinal()))
                         .collect(Collectors.toList());
                 try
                 {
@@ -129,9 +141,9 @@ public final class PageParserSayidImp implements PageParser
             {
                 if (other == null)
                 {
-                    return simhash.distance(ZERO);
+                    return calculator.distance(ZERO);
                 }
-                return simhash.distance(other.simHash());
+                return calculator.distance(other.eigenvalue());
             }
         };
     }
@@ -149,6 +161,12 @@ public final class PageParserSayidImp implements PageParser
             private FrameNodeCapsule father = null;
             private boolean keeping = true;
 
+            /**
+             * Instantiates a new Capsule.
+             *
+             * @param element the element
+             * @param level   the level
+             */
             Capsule (Element element, int level)
             {
                 this.elment   = element;
@@ -172,34 +190,58 @@ public final class PageParserSayidImp implements PageParser
             }
 
             @Override
-            public List<? extends FrameNodeCapsule> getChildren() {
+            public List<? extends FrameNodeCapsule> getChildren()
+            {
                 return children;
             }
 
             @Override
-            public FrameNodeCapsule leftSibling() {
+            public FrameNodeCapsule leftSibling()
+            {
                 return leftSibling;
             }
 
             @Override
-            public FrameNodeCapsule rightSibling() {
+            public FrameNodeCapsule rightSibling()
+            {
                 return rightSibling;
             }
 
             @Override
-            public boolean isKeeping() {
+            public boolean isKeeping()
+            {
                 return keeping;
             }
         }
 
+        /**
+         * The type Fn.
+         */
         public class _FN implements FrameNode
         {
             private final List<_FN> children = new ArrayList<>();
+            /**
+             * The Node type.
+             */
             final NodeType nodeType;
+            /**
+             * The Level.
+             */
             final int level;
+            /**
+             * The Id.
+             */
             String id;
+            /**
+             * The Class names.
+             */
             Set<String> classNames;
 
+            /**
+             * Instantiates a new Fn.
+             *
+             * @param c the c
+             */
             _FN(Capsule c)
             {
                 this.level = c.getLevel();
@@ -245,11 +287,20 @@ public final class PageParserSayidImp implements PageParser
             }
         }
 
+        /**
+         * The Ndtp count.
+         */
         final Map<NodeType, Integer> ndtpCount = Collections.synchronizedMap(
                 new EnumMap<>(NodeType.class));
         private _FN rootNode;
         private LinkedList<FrameNode> nodes = new LinkedList<>();
 
+        /**
+         * Instantiates a new Travering.
+         *
+         * @param document the document
+         * @throws PageParserException the page parser exception
+         */
         Travering (Document document) throws PageParserException
         {
             Element element = document.body();
@@ -282,6 +333,11 @@ public final class PageParserSayidImp implements PageParser
             while (!fifo.isEmpty());
         }
 
+        /**
+         * Build frame.
+         *
+         * @param c the c
+         */
         void buildFrame(Capsule c)
         {
             if (c.level == PageParserSayidImp.this.deepth) return;
@@ -312,6 +368,11 @@ public final class PageParserSayidImp implements PageParser
             c.children.forEach(this::buildFrame);
         }
 
+        /**
+         * Clean frame.
+         *
+         * @param c the c
+         */
         void cleanFrame(Capsule c)
         {
             c.keeping = FiltersConfig.doFilter(c);
