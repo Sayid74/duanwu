@@ -1,14 +1,16 @@
 package prsn.sayid.duanwu.htmlpage;
 
+import com.sun.istack.internal.NotNull;
 import com.ucap.commons.logger.LFactory;
 import com.ucap.commons.logger.LoggerAdapter;
 import com.ucap.duanwu.htmlpage.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import prsn.sayid.duanwu.molds.EigenvalueCalculator;
+import prsn.sayid.duanwu.htmlpage.molds.EigenvalueCalculator;
 import prsn.sayid.duanwu.htmlpage.filters.FiltersConfig;
-import prsn.sayid.duanwu.molds.SimHashSimple;
+import prsn.sayid.duanwu.htmlpage.molds.MD5;
+import prsn.sayid.duanwu.htmlpage.molds.SimHashSimple;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,14 +30,19 @@ import static java.math.BigInteger.ZERO;
  */
 public final class PageParserSayidImp implements PageParser
 {
-    private static LoggerAdapter L = LFactory.makeL(HtmlPage.class);
-
+    private static final LoggerAdapter L;
+    private static final Class<? extends EigenvalueCalculator> hyperplaneHash;
+    private static final Class<? extends EigenvalueCalculator> md5Calculator;
     private int deepth;
     private boolean free = false;
+    private String baseUri;
 
     static
     {
         mount(PageParserSayidImp.class);
+        L = LFactory.makeL(PageParserSayidImp.class);
+        hyperplaneHash = SimHashSimple.class;
+        md5Calculator  = MD5.class;
     }
 
     /**
@@ -92,60 +99,92 @@ public final class PageParserSayidImp implements PageParser
 
     private FramePage parserDom(Document document) throws PageParserException
     {
-        return new FramePage()
+        final String uri = document.baseUri();
+        final Travering _t = new Travering(document);
+
+        class __FP implements FramePage
         {
-            Travering t = new Travering(document);
-            final FrameNode root = t.rootNode;
-            EigenvalueCalculator calculator = new SimHashSimple(t.nodes);
+            class __VO implements ValueObj
+            {
+                @Override
+                public String uri()
+                {
+                    return uri;
+                }
+
+                @Override
+                public long date()
+                {
+                    return 0;
+                }
+
+                @Override
+                public BigInteger md5()
+                {
+                    try
+                    {
+                        return md5Calculator.newInstance().calculate(_t.nodes);
+                    }
+                    catch (InstantiationException | IllegalAccessException e)
+                    {
+                        L.error(e);
+                        return ZERO;
+                    }
+                }
+
+                @Override
+                public BigInteger eigenvalue() {
+                    try
+                    {
+                        return hyperplaneHash.newInstance().calculate(_t.nodes);
+                    }
+                    catch (InstantiationException | IllegalAccessException e)
+                    {
+                        L.error(e);
+                        return ZERO;
+                    }
+                }
+            }
+
             @Override
             public int countGroupByNodeType(NodeType nodeType)
             {
-                return t.ndtpCount.get(nodeType);
+                return _t.ndtpCount.get(nodeType);
             }
+
             @Override
             public FrameNode getRoot()
             {
-                return root;
+                return _t.rootNode;
             }
-            @Override
-            public BigInteger eigenvalue()
-            {
-                return calculator.calculate();
-            }
-            @Override
-            public BigInteger md5()
-            {
-                List<Byte> data = t.nodes.stream()
-                        .map(a->(byte)(a.getNodeType().ordinal()))
-                        .collect(Collectors.toList());
-                try
-                {
-                    MessageDigest md5 = MessageDigest.getInstance("md5");
-                    byte d[] = new byte[data.size()];
-                    for(int i = 0; i < d.length; i++) d[i] = data.get(i);
-                    return new BigInteger(md5.digest(d));
-                }
-                catch (NoSuchAlgorithmException e)
-                {
-                    L.error(e);
-                    return ZERO;
-                }
-            }
+
             @Override
             public List<FrameNode> wideFirstTravel()
             {
-                return new ArrayList<>(t.nodes);
+                return new ArrayList<>(_t.nodes);
             }
+
             @Override
-            public long distance(FramePage other)
-            {
-                if (other == null)
-                {
-                    return calculator.distance(ZERO);
-                }
-                return calculator.distance(other.eigenvalue());
+            public ValueObj vo() {
+                return new __VO();
             }
-        };
+
+            @Override
+            public long distance(@NotNull FramePage other)
+                    throws PageParserException
+            {
+                try
+                {
+                    return hyperplaneHash.newInstance().distance(other.vo().eigenvalue());
+                }
+                catch (InstantiationException | IllegalAccessException e)
+                {
+                    throw new PageParserException(e);
+                }
+            }
+
+        }
+        return new __FP();
     }
 
     private class Travering

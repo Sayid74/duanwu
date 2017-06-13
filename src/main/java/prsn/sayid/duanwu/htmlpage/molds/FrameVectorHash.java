@@ -1,5 +1,6 @@
-package prsn.sayid.duanwu.molds;
+package prsn.sayid.duanwu.htmlpage.molds;
 
+import com.sun.istack.internal.NotNull;
 import com.ucap.duanwu.htmlpage.FrameNode;
 import com.ucap.duanwu.htmlpage.NodeType;
 
@@ -13,7 +14,7 @@ import static java.math.BigInteger.ZERO;
 /**
  * Created by emmet on 2017/5/26.
  */
-public class FrameVectorHash implements EigenvalueCalculator
+public class FrameVectorHash implements EigenvalueCalculator<List<FrameNode>>
 {
     private static final Map<NodeType, BigInteger> vectors =
             new EnumMap<NodeType, BigInteger>(NodeType.class){{
@@ -53,17 +54,12 @@ public class FrameVectorHash implements EigenvalueCalculator
     //private Function<FrameNode, Integer> powerCal;
     private List<FrameNode> nodes;
     private int vectorValues[] = new int[vectors.size()];
-    private BigInteger eigenvalue;
+    private BigInteger eigenvalue = ZERO;
 
-    public FrameVectorHash(List<? extends FrameNode> nodes)
+    @Override
+    public BigInteger calculate(@NotNull List<FrameNode> resources)
     {
-        this.nodes = Collections.unmodifiableList(nodes);
-        vectorValues = new int[vectors.size()];
-    }
-
-    public BigInteger calculate()
-    {
-        eigenvalue = ZERO;
+        this.nodes = new ArrayList<>(resources);
         System.out.println("nodes count: " + nodes.size());
         nodes.forEach(a -> vectorValues[a.getNodeType().ordinal()]
                 += a.getLevel());
@@ -113,10 +109,4 @@ public class FrameVectorHash implements EigenvalueCalculator
 
         return r;
     }
-
-    @Override
-    public BigInteger getEigenvalue() {
-        return eigenvalue;
-    }
-
 }

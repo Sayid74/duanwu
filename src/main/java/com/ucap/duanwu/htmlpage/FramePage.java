@@ -7,10 +7,16 @@ import java.util.List;
  * Created by emmet on 2017/5/23.
  */
 public interface FramePage {
+    public interface ValueObj
+    {
+        String uri();
+        BigInteger md5();
+        BigInteger eigenvalue();
+    }
+
     int countGroupByNodeType(NodeType nodeType);
     FrameNode getRoot();
-    BigInteger eigenvalue();
-    long distance(FramePage other);
-    BigInteger md5();
+    long distance(FramePage other) throws PageParserException;
     List<FrameNode> wideFirstTravel();
+    ValueObj vo();
 }

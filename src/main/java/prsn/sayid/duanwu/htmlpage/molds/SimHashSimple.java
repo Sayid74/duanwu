@@ -1,9 +1,10 @@
-package prsn.sayid.duanwu.molds;
+package prsn.sayid.duanwu.htmlpage.molds;
 
 /**
  * Created by emmet on 2017/6/7.
  */
 
+import com.sun.istack.internal.NotNull;
 import com.ucap.duanwu.htmlpage.FrameNode;
 import com.ucap.duanwu.htmlpage.NodeType;
 
@@ -14,7 +15,10 @@ import static com.ucap.duanwu.htmlpage.NodeType.*;
 import static java.math.BigInteger.ONE;
 import static java.math.BigInteger.ZERO;
 
-public class SimHashSimple implements EigenvalueCalculator
+/**
+ * The type Sim hash simple.
+ */
+public class SimHashSimple implements EigenvalueCalculator<List<FrameNode>>
 {
     private static final Map<NodeType, Integer> vectors =
             new EnumMap<NodeType, Integer>(NodeType.class){{
@@ -52,25 +56,13 @@ public class SimHashSimple implements EigenvalueCalculator
             }};
 
     private List<FrameNode> nodes;
-    private BigInteger intSimHash;
+    private BigInteger intSimHash = ZERO;
     private int hashbits = 64;
 
-    public SimHashSimple(List<FrameNode> nodes)
-    {
-        this.nodes = nodes;
-        calculate();
-    }
-
-    public SimHashSimple(List<FrameNode> tokens, int hashbits)
-    {
-        this.nodes = tokens;
-        this.hashbits = hashbits;
-        calculate();
-    }
-
     @Override
-    public BigInteger calculate()
+    public BigInteger calculate(@NotNull List<FrameNode> resources)
     {
+        this.nodes = new ArrayList(resources);
         int[] v = new int[hashbits];
 
         nodes.forEach(a->{
@@ -79,7 +71,6 @@ public class SimHashSimple implements EigenvalueCalculator
                 v[i] += t.testBit(i) ? a.getLevel() : 0;
         });
 
-        intSimHash = ZERO;
         for (int i = 0; i < this.hashbits; i++)
             intSimHash = intSimHash.setBit(i);
 
@@ -99,12 +90,14 @@ public class SimHashSimple implements EigenvalueCalculator
         }
         return tot;
     }
-    @Override
-    public BigInteger getEigenvalue()
-    {
-        return intSimHash;
-    }
 
+    /**
+     * Sub by distance list.
+     *
+     * @param simHash  the sim hash
+     * @param distance the distance
+     * @return the list
+     */
     public List subByDistance(SimHashSimple simHash, int distance)
     {
         int numEach = hashbits / (distance + 1);
