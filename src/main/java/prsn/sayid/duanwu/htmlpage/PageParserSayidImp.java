@@ -113,12 +113,6 @@ public final class PageParserSayidImp implements PageParser
                 }
 
                 @Override
-                public long date()
-                {
-                    return 0;
-                }
-
-                @Override
                 public BigInteger md5()
                 {
                     try
