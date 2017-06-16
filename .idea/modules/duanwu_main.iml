@@ -9,7 +9,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Gradle: org.apache.tomcat.embed:tomcat-embed-core:9.0.0.M21" level="project" />
     <orderEntry type="library" name="Gradle: org.jsoup:jsoup:1.10.2" level="project" />
     <orderEntry type="library" name="Gradle: org.mongodb:mongo-java-driver:3.4.2" level="project" />
   </component>

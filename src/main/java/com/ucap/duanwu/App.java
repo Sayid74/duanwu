@@ -22,14 +22,15 @@ public class App
         String url = null;
         if (args.length == 0)
         {
-
-            url = System.console().readLine();System.out.println("Input a url: ");
+            System.out.println("Input a url: ");
+            url = System.console().readLine();
         }
         else
         {
             url = args[0];
         }
 
+        /*
         FramePage frame = null;
         try(InputStream input = (new URL(url)).openStream())
         {
@@ -39,7 +40,7 @@ public class App
             if (frame == null)
                 System.out.println("Parser resualt is null!");
             else {
-                System.out.println("SimHash: " + frame.eigenvalue());
+                System.out.println("SimHash: " + frame.vo().eigenvalue());
                 System.out.println("Distance : " + frame.distance(null));
             }
         }
@@ -49,5 +50,7 @@ public class App
             ParseredPersistence p = ParseredPersistence.getPersistence(true);
             p.saveFramePageValue(frame.vo(), "www.sina.com", System.currentTimeMillis());
         }
+        */
+
     }
 }

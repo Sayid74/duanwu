@@ -1,22 +1,19 @@
 package prsn.sayid.duanwu.htmlpage;
 
-import com.sun.istack.internal.NotNull;
 import com.ucap.commons.logger.LFactory;
 import com.ucap.commons.logger.LoggerAdapter;
 import com.ucap.duanwu.htmlpage.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import prsn.sayid.duanwu.htmlpage.molds.EigenvalueCalculator;
 import prsn.sayid.duanwu.htmlpage.filters.FiltersConfig;
+import prsn.sayid.duanwu.htmlpage.molds.EigenvalueCalculator;
 import prsn.sayid.duanwu.htmlpage.molds.MD5;
 import prsn.sayid.duanwu.htmlpage.molds.SimHashSimple;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -64,6 +61,24 @@ public final class PageParserSayidImp implements PageParser
         try
         {
             d = Jsoup.parse(input, charsetName, baseUri);
+        }
+        catch (IOException e)
+        {
+            throw new PageParserException(e);
+        }
+        FramePage r = parserDom(d);
+        free();
+        return r;
+    }
+
+    @Override
+    public FramePage doParse(String url)
+            throws PageParserException
+    {
+        Document d;
+        try
+        {
+            d = Jsoup.connect(url).get();
         }
         catch (IOException e)
         {
@@ -164,7 +179,7 @@ public final class PageParserSayidImp implements PageParser
             }
 
             @Override
-            public long distance(@NotNull FramePage other)
+            public long distance(FramePage other)
                     throws PageParserException
             {
                 try

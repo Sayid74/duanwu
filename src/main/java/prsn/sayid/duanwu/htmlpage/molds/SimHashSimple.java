@@ -4,7 +4,6 @@ package prsn.sayid.duanwu.htmlpage.molds;
  * Created by emmet on 2017/6/7.
  */
 
-import com.sun.istack.internal.NotNull;
 import com.ucap.duanwu.htmlpage.FrameNode;
 import com.ucap.duanwu.htmlpage.NodeType;
 
@@ -60,7 +59,7 @@ public class SimHashSimple implements EigenvalueCalculator<List<FrameNode>>
     private int hashbits = 64;
 
     @Override
-    public BigInteger calculate(@NotNull List<FrameNode> resources)
+    public BigInteger calculate(List<FrameNode> resources)
     {
         this.nodes = new ArrayList(resources);
         int[] v = new int[hashbits];

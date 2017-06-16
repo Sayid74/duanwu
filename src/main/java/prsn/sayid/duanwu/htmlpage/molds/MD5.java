@@ -1,6 +1,5 @@
 package prsn.sayid.duanwu.htmlpage.molds;
 
-import com.sun.istack.internal.NotNull;
 import com.ucap.commons.logger.LFactory;
 import com.ucap.commons.logger.LoggerAdapter;
 import com.ucap.duanwu.htmlpage.FrameNode;
@@ -24,7 +23,7 @@ public class MD5 implements EigenvalueCalculator <List<FrameNode>>
     BigInteger eigenvalue = ZERO;
 
     @Override
-    public BigInteger calculate(@NotNull List<FrameNode> resouces)
+    public BigInteger calculate(List<FrameNode> resouces)
     {
         this.nodes = new ArrayList(nodes);
 

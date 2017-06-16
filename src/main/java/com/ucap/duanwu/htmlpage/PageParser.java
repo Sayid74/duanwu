@@ -8,6 +8,7 @@ import java.io.InputStream;
 public interface PageParser {
     FramePage doParse(InputStream input, String charsetName, String baseUri)
         throws PageParserException;
+    FramePage doParse(String url) throws PageParserException;
     void setParserDeepth(int deepth);
     int getParserDeepth();
     boolean isFree();

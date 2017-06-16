@@ -5,46 +5,41 @@ package prsn.sayid.duanwu.spider;
  */
 
 import org.jsoup.Jsoup;
-import org.jsoup.helper.Validate;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import static jdk.nashorn.internal.objects.Global.print;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class URLRetriever {
-    public static void main(String[] args) throws IOException {
-        Validate.isTrue(args.length == 1, "usage: supply url to fetch");
-        String url = args[0];
-        print("Feching %s...", url);
 
-        Document doc = Jsoup.connect(url).get();
-        Elements links = doc.select("a[href]");
-        Elements media = doc.select("[src]");
-        Elements imports = doc.select("link[href]");
+    private static final String LINK_FEATURE= "a[bref]";
+    private static final String MEDIA_FEATURE= "[src]";
+    private static final String IMPORT_FEATURE= "link[href]";
 
-        print("\nMedia: (%d)", media.size());
-        for (Element src: media) {
-            if (src.tagName().equals("img"))
-                print("* %s: <%s> %sx%s (%s) \n",
-                        src.tagName() ,
-                        src.attr("abs:src"),
-                        src.attr("width"),
-                        src.attr("height"),
-                        src.attr("alt").substring(0, 20));
-            else
-                print(" * %s: <%s> \n", src.tagName(),
-                        src.attr("abs:src"));
-        }
+    public static URLRetriever mkRetrieverByUrl(String url) throws IOException{
+        return new URLRetriever(url);
+    }
 
-        print("\nImports: (%d)", imports.size());
-        for (Element link: imports) {
-            print("* %s <%s> (%s)",
-                    link.tagName(),
-                    link.attr("abs:href"),
-                    link.text().substring(0, 35));
-        }
+    private final Document doc;
+    private URLRetriever(String url) throws IOException {
+        doc = Jsoup.connect(url).get();
+    }
+
+    public List<String> listLinks() { //Inner Link
+        return doc.select(LINK_FEATURE).stream().map(a-> a.attr("abs:src"))
+                .collect(Collectors.toList());
+    }
+
+    public List<String> listmedias() { //
+        return doc.select(MEDIA_FEATURE).stream().map(a-> a.attr("abs:src"))
+                .collect(Collectors.toList());
+
+    }
+
+    public List<String> listImports() { //Outter link
+        return doc.select(IMPORT_FEATURE).stream().map(a-> a.attr("abs:src"))
+                .collect(Collectors.toList());
     }
 }

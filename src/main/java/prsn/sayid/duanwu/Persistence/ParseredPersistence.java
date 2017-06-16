@@ -6,7 +6,6 @@ package prsn.sayid.duanwu.Persistence;
 import com.mongodb.MongoClient;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoDatabase;
-import com.sun.istack.internal.NotNull;
 import com.ucap.commons.logger.LFactory;
 import com.ucap.commons.logger.LoggerAdapter;
 import com.ucap.duanwu.htmlpage.FramePage;
@@ -28,7 +27,7 @@ public class ParseredPersistence
 
     private static UUID globalUUID = UUID.randomUUID();
 
-    public static void putServer(@NotNull String url, int port)
+    public static void putServer(String url, int port)
     {
         for(ServerAddress a: serverAddresses)
         {
@@ -56,7 +55,7 @@ public class ParseredPersistence
     private final UUID _uuid = globalUUID;
     private MongoClient mongoClnt ;
 
-    private ParseredPersistence(@NotNull MongoClient mongoClnt)
+    private ParseredPersistence(MongoClient mongoClnt)
     {
         this.mongoClnt = mongoClnt;
     }

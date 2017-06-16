@@ -11,54 +11,42 @@ import java.util.Arrays;
 /**
  * Created by emmet on 2017/5/23.
  */
-public class HtmlPage
-{
+public class HtmlPage {
     private static LoggerAdapter L = LFactory.makeL(HtmlPage.class);
     private static Class<? extends PageParser> parserClass = null;
-    static
-    {
-        try
-        {
+    static {
+        try {
             String ppPrp = System.getProperty("com.ucap.PageParser");
             Class c = ClassLoader.getSystemClassLoader().loadClass(ppPrp);
-            if (Arrays.asList(c.getInterfaces()).contains(PageParser.class))
-            {
+            if (Arrays.asList(c.getInterfaces()).contains(PageParser.class)) {
                 L.info("PageParser is implemented by:" + c.getName());
                 parserClass = (Class<PageParser>) c;
-            }
-            else
-            {
+            } else {
                 throw new ClassNotFoundException(
                         "com.ucap.PageParser property isn't" +
                         " a com.ucap.duanwu.html.PageParser instance.");
             }
         }
-        catch (ClassNotFoundException ex) 
-        {
+        catch (ClassNotFoundException ex) {
             L.error(ex);
         }
     }
-    private static class PageParserWrap implements InvocationHandler
-    {
+
+    private static class PageParserWrap implements InvocationHandler {
         private final PageParser p;
-        PageParserWrap(PageParser p)
-        {
+        PageParserWrap(PageParser p) {
             this.p = p;
         }
         @Override
         public Object invoke(Object proxy, Method method, Object[] args)
-                throws Throwable
-        {
-            if ("doParse".equals(method.getName()))
-            {
+                throws Throwable {
+            if ("doParse".equals(method.getName())) {
                 long t0 = System.currentTimeMillis();
                 Object r = method.invoke(p, args);
                 L.info(String.format("parser uses times: %d"
                         , System.currentTimeMillis() - t0));
                 return r;
-            }
-            else
-            {
+            } else {
                 return method.invoke(p, args);
             }
         }
@@ -66,8 +54,7 @@ public class HtmlPage
 
 
     public static PageParser makePageParser()
-            throws InstantiationException, IllegalAccessException
-    {
+            throws InstantiationException, IllegalAccessException {
         return parserClass == null ? null
                 :(PageParser) Proxy.newProxyInstance(
                         parserClass.getClassLoader()
@@ -75,8 +62,7 @@ public class HtmlPage
                 , new PageParserWrap(parserClass.newInstance()));
     }
 
-    public static synchronized void mount(Class<? extends PageParser> c)
-    {
+    public static synchronized void mount(Class<? extends PageParser> c) {
         parserClass = c;
     }
 }

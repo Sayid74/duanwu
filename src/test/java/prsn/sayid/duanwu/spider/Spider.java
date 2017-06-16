@@ -1,10 +1,12 @@
 package prsn.sayid.duanwu.spider;
 
-import java.util.Arrays;
+import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * Created by emmet on 2017/6/15.
@@ -12,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Spider {
 
-    static class Node {
+    public final static class Node {
         private final int level;
         private String url;
         Node(int level, String url) {
@@ -21,36 +23,48 @@ public class Spider {
         }
     }
 
-    public static ArrayBlockingQueue<Spider> spiders;
-    public static LinkedBlockingQueue<List<Node>> nodes;
+    public final static int MAX_SPIDER_COUNT = 10;
+    public final static int MAX_LEVEL = 8;
 
-    public static int MAX_SPIDER_COUNT = 10;
+    private final static ArrayBlockingQueue<Spider> spiders
+            = new ArrayBlockingQueue<Spider>(MAX_SPIDER_COUNT);
+    private final static LinkedList<Node> nodes = new LinkedList<>();
+
 
     static {
-        spiders = new ArrayBlockingQueue<Spider>(MAX_SPIDER_COUNT);
-        nodes = new LinkedBlockingQueue<>(1);
         for (int i = 0; i < MAX_SPIDER_COUNT; i++)
             spiders.add(new Spider());
     }
 
-    public static void doCrawl(String url, int mastLevel) {
-
-        nodes.add(Arrays.asList(new Node(0, url)));
-        while (!nodes.isEmpty()) {
-            try {
-                Spider s = spiders.poll(1, TimeUnit.SECONDS);
-                nodes.put(s.listNodes());
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                break;
+    public static void doCrawl(String url, int mastLevel, CrawlingAction action) {
+        nodes.add(new Node(0, url));
+        synchronized (nodes)
+        {
+            while (!nodes.isEmpty()) {
+                Node n = nodes.pollLast();
+                if (action != null) action.doAction(n);
+                Spider s = null;
+                try {
+                    s = spiders.poll(1, SECONDS);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                nodes.addAll(s.crawlTo(n));
             }
         }
     }
 
-    private List<Node> listNodes() {
+    public List<Node> crawlTo(Node n) {
+        int level = n.level + 1;
+        if (level > MAX_LEVEL) return null;
+        try {
+            return URLRetriever.mkRetrieverByUrl(n.url).listLinks().stream()
+                    .map(a->new Node(level, a)).collect(Collectors.toList());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
-    Spider() {
-    }
-
+    private Spider(){}
 }

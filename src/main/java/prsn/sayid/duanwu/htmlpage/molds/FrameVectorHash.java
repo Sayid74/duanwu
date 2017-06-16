@@ -1,6 +1,5 @@
 package prsn.sayid.duanwu.htmlpage.molds;
 
-import com.sun.istack.internal.NotNull;
 import com.ucap.duanwu.htmlpage.FrameNode;
 import com.ucap.duanwu.htmlpage.NodeType;
 
@@ -57,7 +56,7 @@ public class FrameVectorHash implements EigenvalueCalculator<List<FrameNode>>
     private BigInteger eigenvalue = ZERO;
 
     @Override
-    public BigInteger calculate(@NotNull List<FrameNode> resources)
+    public BigInteger calculate(List<FrameNode> resources)
     {
         this.nodes = new ArrayList<>(resources);
         System.out.println("nodes count: " + nodes.size());
