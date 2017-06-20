@@ -184,7 +184,8 @@ public final class PageParserSayidImp implements PageParser
             {
                 try
                 {
-                    return hyperplaneHash.newInstance().distance(other.persistenceObj().eigenvalue());
+                    return hyperplaneHash.newInstance()
+                            .distance(other.persistenceObj().eigenvalue());
                 }
                 catch (InstantiationException | IllegalAccessException e)
                 {
