@@ -23,7 +23,7 @@ import static java.math.BigInteger.ZERO;
 
 
 /**
- * Created by emmet on 2017/5/22.
+ * The type Page parser sayid imp.
  */
 public final class PageParserSayidImp implements PageParser
 {
@@ -54,7 +54,7 @@ public final class PageParserSayidImp implements PageParser
     }
 
     @Override
-    public FramePage doParse(InputStream input, String charsetName, String baseUri)
+    public FrameDigest doParse(InputStream input, String charsetName, String baseUri)
             throws PageParserException
     {
         Document d;
@@ -66,13 +66,13 @@ public final class PageParserSayidImp implements PageParser
         {
             throw new PageParserException(e);
         }
-        FramePage r = parserDom(d);
+        FrameDigest r = parserDom(d);
         free();
         return r;
     }
 
     @Override
-    public FramePage doParse(String url)
+    public FrameDigest doParse(String url)
             throws PageParserException
     {
         Document d;
@@ -84,7 +84,7 @@ public final class PageParserSayidImp implements PageParser
         {
             throw new PageParserException(e);
         }
-        FramePage r = parserDom(d);
+        FrameDigest r = parserDom(d);
         free();
         return r;
     }
@@ -112,14 +112,14 @@ public final class PageParserSayidImp implements PageParser
         free = true;
     }
 
-    private FramePage parserDom(Document document) throws PageParserException
+    private FrameDigest parserDom(Document document) throws PageParserException
     {
         final String uri = document.baseUri();
         final Travering _t = new Travering(document);
 
-        class __FP implements FramePage
+        class FD implements FrameDigest
         {
-            class __VO implements ValueObj
+            class PO implements PersistenceObj
             {
                 @Override
                 public String uri()
@@ -174,17 +174,17 @@ public final class PageParserSayidImp implements PageParser
             }
 
             @Override
-            public ValueObj vo() {
-                return new __VO();
+            public PersistenceObj persistenceObj() {
+                return new PO();
             }
 
             @Override
-            public long distance(FramePage other)
+            public long distance(FrameDigest other)
                     throws PageParserException
             {
                 try
                 {
-                    return hyperplaneHash.newInstance().distance(other.vo().eigenvalue());
+                    return hyperplaneHash.newInstance().distance(other.persistenceObj().eigenvalue());
                 }
                 catch (InstantiationException | IllegalAccessException e)
                 {
@@ -193,7 +193,7 @@ public final class PageParserSayidImp implements PageParser
             }
 
         }
-        return new __FP();
+        return new FD();
     }
 
     private class Travering

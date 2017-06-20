@@ -32,27 +32,43 @@ public class HtmlPage {
         }
     }
 
+    /**
+     * It's a wrapper to give dynamic proxy object.
+     */
     private static class PageParserWrap implements InvocationHandler {
-        private final PageParser p;
-        PageParserWrap(PageParser p) {
-            this.p = p;
+        private final PageParser parser;
+
+        /**
+         * Instantiates a new Page parser wrap.
+         *
+         * @param parser the parser
+         */
+        PageParserWrap(PageParser parser) {
+            this.parser = parser;
         }
         @Override
         public Object invoke(Object proxy, Method method, Object[] args)
                 throws Throwable {
             if ("doParse".equals(method.getName())) {
                 long t0 = System.currentTimeMillis();
-                Object r = method.invoke(p, args);
+                Object r = method.invoke(parser, args);
                 L.info(String.format("parser uses times: %d"
                         , System.currentTimeMillis() - t0));
                 return r;
             } else {
-                return method.invoke(p, args);
+                return method.invoke(parser, args);
             }
         }
     }
 
 
+    /**
+     * Make page parser page parser.
+     *
+     * @return the page parser
+     * @throws InstantiationException the instantiation exception
+     * @throws IllegalAccessException the illegal access exception
+     */
     public static PageParser makePageParser()
             throws InstantiationException, IllegalAccessException {
         return parserClass == null ? null
@@ -62,7 +78,12 @@ public class HtmlPage {
                 , new PageParserWrap(parserClass.newInstance()));
     }
 
-    public static synchronized void mount(Class<? extends PageParser> c) {
-        parserClass = c;
+    /**
+     * Mount.
+     *
+     * @param parserClass the parser class
+     */
+    public static synchronized void mount(Class<? extends PageParser> parserClass) {
+        HtmlPage.parserClass = parserClass;
     }
 }

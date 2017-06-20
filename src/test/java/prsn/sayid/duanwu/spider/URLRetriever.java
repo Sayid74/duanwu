@@ -42,4 +42,4 @@ public class URLRetriever {
         return doc.select(IMPORT_FEATURE).stream().map(a-> a.attr("abs:src"))
                 .collect(Collectors.toList());
     }
-}
+ }

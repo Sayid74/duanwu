@@ -1,13 +1,5 @@
 package com.ucap.duanwu;
 
-import com.ucap.duanwu.htmlpage.FramePage;
-import com.ucap.duanwu.htmlpage.HtmlPage;
-import com.ucap.duanwu.htmlpage.PageParser;
-import prsn.sayid.duanwu.Persistence.ParseredPersistence;
-
-import java.io.InputStream;
-import java.net.URL;
-
 public class App
 {
     static
@@ -31,7 +23,7 @@ public class App
         }
 
         /*
-        FramePage frame = null;
+        FrameDigest frame = null;
         try(InputStream input = (new URL(url)).openStream())
         {
             PageParser pageParser = HtmlPage.makePageParser();
@@ -40,15 +32,15 @@ public class App
             if (frame == null)
                 System.out.println("Parser resualt is null!");
             else {
-                System.out.println("SimHash: " + frame.vo().eigenvalue());
+                System.out.println("SimHash: " + frame.persistenceObj().eigenvalue());
                 System.out.println("Distance : " + frame.distance(null));
             }
         }
         if (frame != null)
         {
-            ParseredPersistence.putServer("192.168.1.142",27017);
-            ParseredPersistence p = ParseredPersistence.getPersistence(true);
-            p.saveFramePageValue(frame.vo(), "www.sina.com", System.currentTimeMillis());
+            ParseredPersistenceImp.putServer("192.168.1.142",27017);
+            ParseredPersistenceImp p = ParseredPersistenceImp.getPersistence(true);
+            p.saveFramePageValue(frame.persistenceObj(), "www.sina.com", System.currentTimeMillis());
         }
         */
 

@@ -56,8 +56,7 @@ public class FrameVectorHash implements EigenvalueCalculator<List<FrameNode>>
     private BigInteger eigenvalue = ZERO;
 
     @Override
-    public BigInteger calculate(List<FrameNode> resources)
-    {
+    public BigInteger calculate(List<FrameNode> resources) {
         this.nodes = new ArrayList<>(resources);
         System.out.println("nodes count: " + nodes.size());
         nodes.forEach(a -> vectorValues[a.getNodeType().ordinal()]
@@ -66,13 +65,11 @@ public class FrameVectorHash implements EigenvalueCalculator<List<FrameNode>>
         for (int i = 0; i < vectorValues.length; i++)
             System.out.println ("vector[" + i + "] = " + vectorValues[i]) ;
 
-        for(int i = 0; i < vectorValues.length; i++)
-        {
+        for(int i = 0; i < vectorValues.length; i++) {
             int value = vectorValues[i];
             if (value >= 85)
                 value = 15;
-            else
-            {
+            else {
                 int v1 = value & 3;
                 int v2 = (value & (15 -  3)) == 0? 0 : 1;
                 int v3 = (value & (63 - 15)) == 0? 0 : 1;
@@ -88,15 +85,13 @@ public class FrameVectorHash implements EigenvalueCalculator<List<FrameNode>>
     }
 
     @Override
-    public int distance(BigInteger other)
-    {
+    public int distance(BigInteger other) {
         int r = 0;
         BigInteger x0 = eigenvalue;
         BigInteger x1 = other;
         BigInteger m = BigInteger.valueOf(15);
 
-        while (!x0.equals(x1))
-        {
+        while (!x0.equals(x1)) {
             BigInteger _x0 = x0.and(m);
             BigInteger _x1 = x1.and(m);
 

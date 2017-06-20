@@ -8,7 +8,8 @@ import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoDatabase;
 import com.ucap.commons.logger.LFactory;
 import com.ucap.commons.logger.LoggerAdapter;
-import com.ucap.duanwu.htmlpage.FramePage;
+import com.ucap.duanwu.Persistence.FramePersistence;
+import com.ucap.duanwu.htmlpage.FrameDigest;
 import org.bson.Document;
 
 import java.util.LinkedList;
@@ -16,33 +17,44 @@ import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-public class ParseredPersistence
-{
-    private static final LoggerAdapter L = LFactory.makeL(ParseredPersistence.class);
+/**
+ * The type Parsered persistence.
+ */
+public class ParseredPersistenceImp implements FramePersistence {
+    private static final LoggerAdapter L = LFactory.makeL(ParseredPersistenceImp.class);
     private static final String COLLECTION_NAME = "FramePages";
     private static final String DATABASE_NAME = "duanwu";
     private static final LinkedList<ServerAddress> serverAddresses = new LinkedList<>();
-    private static final LinkedBlockingQueue<ParseredPersistence> processors
+    private static final LinkedBlockingQueue<ParseredPersistenceImp> processors
             = new LinkedBlockingQueue<>();
 
     private static UUID globalUUID = UUID.randomUUID();
 
-    public static void putServer(String url, int port)
-    {
-        for(ServerAddress a: serverAddresses)
-        {
+    /**
+     * Add a mongodb server host to a list recorder. The list structure
+     * will used to select and connect to a mongodb server.
+     *
+     * @param url  the uri or ip address represents host server address.
+     * @param port the port bounds to the host server.
+     */
+    public static void putServer(String url, int port) {
+        for(ServerAddress a: serverAddresses) {
             if ((url.equals(a.getHost())) && (port == a.getPort())) return;
         }
         serverAddresses.add(new ServerAddress(url, port));
         globalUUID = UUID.randomUUID();
     }
 
-    public static ParseredPersistence getPersistence(boolean makeNew)
-    {
+    /**
+     * Gets persistence.
+     *
+     * @param makeNew the make new
+     * @return the persistence
+     */
+    public static ParseredPersistenceImp getPersistence(boolean makeNew) {
         if ((processors.isEmpty()) || (makeNew))
-            return new ParseredPersistence(new MongoClient(serverAddresses));
-        else
-        {
+            return new ParseredPersistenceImp(new MongoClient(serverAddresses));
+        else {
             try {
                 return processors.poll(5, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
@@ -55,14 +67,20 @@ public class ParseredPersistence
     private final UUID _uuid = globalUUID;
     private MongoClient mongoClnt ;
 
-    private ParseredPersistence(MongoClient mongoClnt)
-    {
+    private ParseredPersistenceImp(MongoClient mongoClnt) {
         this.mongoClnt = mongoClnt;
     }
 
-    public synchronized void saveFramePageValue(FramePage.ValueObj value, String websiteHost
-            , long loadingDate)
-    {
+    /**
+     * Save frame page value.
+     *
+     * @param value       the value
+     * @param websiteHost the website host
+     * @param loadingDate the loading date
+     */
+    @Override
+    public synchronized void saveFramePageValue(FrameDigest.PersistenceObj value, String websiteHost
+            , long loadingDate) {
         Document doc = new Document();
         doc.put("website", websiteHost);
         doc.put("uri", value.uri());
@@ -73,7 +91,7 @@ public class ParseredPersistence
         MongoDatabase db = mongoClnt.getDatabase(DATABASE_NAME);
         db.getCollection(COLLECTION_NAME).insertOne(doc);
 
-        if (this._uuid == ParseredPersistence.globalUUID)
+        if (this._uuid == ParseredPersistenceImp.globalUUID)
             processors.add(this);
         else {
             mongoClnt.close();
