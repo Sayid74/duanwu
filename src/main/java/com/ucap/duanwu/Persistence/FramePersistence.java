@@ -13,6 +13,6 @@ public interface FramePersistence {
      * @param websiteHost the website host
      * @param loadingDate the loading date
      */
-    void saveFramePageValue(FrameDigest.PersistenceObj value, String websiteHost
+    void saveValue(FrameDigest.PersistenceObj value, String websiteHost
             , long loadingDate);
 }

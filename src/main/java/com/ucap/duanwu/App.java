@@ -40,7 +40,7 @@ public class App
         {
             ParseredPersistenceImp.putServer("192.168.1.142",27017);
             ParseredPersistenceImp p = ParseredPersistenceImp.getPersistence(true);
-            p.saveFramePageValue(frame.persistenceObj(), "www.sina.com", System.currentTimeMillis());
+            p.saveValue(frame.persistenceObj(), "www.sina.com", System.currentTimeMillis());
         }
         */
 

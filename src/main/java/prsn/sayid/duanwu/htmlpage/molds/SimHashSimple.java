@@ -113,7 +113,6 @@ public class SimHashSimple implements EigenvalueCalculator<List<FrameNode>>
             if ((i + 1) % numEach == 0)
             {
                 BigInteger eachValue = new BigInteger(buffer.toString(), 2);
-                System.out.println("------" + eachValue);
                 buffer.delete(0, buffer.length());
                 characters.add(eachValue);
             }

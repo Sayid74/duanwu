@@ -1,9 +1,6 @@
 package prsn.sayid.duanwu.htmlpage;
 
-import com.ucap.duanwu.htmlpage.FrameDigest;
-import com.ucap.duanwu.htmlpage.HtmlPage;
-import com.ucap.duanwu.htmlpage.NodeType;
-import com.ucap.duanwu.htmlpage.PageParser;
+import com.ucap.duanwu.htmlpage.*;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Element;
 import org.junit.Assert;
@@ -15,20 +12,31 @@ import prsn.sayid.duanwu.Persistence.ParseredPersistenceImp;
 import java.io.InputStream;
 import java.net.URL;
 
+import static prsn.sayid.duanwu.spider.Spider.doCrawl;
+
 /**
- * Created by emmet on 2017/6/20.
+ * The type Page parser sayid imp test.
  */
 public class PageParserSayidImpTest {
-    static
-    {
+    static {
         System.setProperty("com.ucap.logger",
                 "prsn.sayid.common.LoggerAdapterSayid");
         System.setProperty("com.ucap.PageParser",
                 "prsn.sayid.duanwu.htmlpage.PageParserSayidImp");
     }
 
+    /**
+     * The Page parser.
+     */
     PageParser pageParser;
+    /**
+     * The Url.
+     */
     String url = "http://www.sina.com.cn";
+
+    /**
+     * Sets up.
+     */
     @Before
     public void setUp() {
         try {
@@ -41,34 +49,50 @@ public class PageParserSayidImpTest {
         pageParser.setParserDeepth(20);
     }
 
+    /**
+     * Test do parse.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void testDoParse() throws Exception {
         FrameDigest frame = null;
         try(InputStream input = (new URL(url)).openStream())
         {
             frame = pageParser.doParse(input, "UTF-8", url);
-            if (frame == null)
-                System.out.println("Parser resualt is null!");
-            else {
-                System.out.println("SimHash: " + frame.persistenceObj().eigenvalue());
-                System.out.println("Distance : " + frame.distance(null));
-            }
+            Assert.assertNotNull(frame);
+            System.out.println("SimHash: " + frame.persistenceObj().eigenvalue());
         }
         if (frame != null)
         {
             ParseredPersistenceImp.putServer("192.168.1.142",27017);
             ParseredPersistenceImp p = ParseredPersistenceImp.getPersistence(true);
-            p.saveFramePageValue(frame.persistenceObj(), "www.sina.com", System.currentTimeMillis());
+            p.saveValue(frame.persistenceObj(), "www.sina.com", System.currentTimeMillis());
         }
         Assert.assertTrue(true);
     }
 
+    /**
+     * Test do parse 2.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void testDoParse2() throws Exception {
         FrameDigest frame = pageParser.doParse(url);
+        Assert.assertNotNull(frame);
+        ParseredPersistenceImp.putServer("192.168.1.142", 27017);
+        ParseredPersistenceImp.getPersistence(false)
+                .saveValue(frame.persistenceObj()
+                        , "www.sina.com", System.currentTimeMillis());
         Assert.assertTrue(true);
     }
 
+    /**
+     * Test node type of e.
+     *
+     * @throws Exception the exception
+     */
     @Ignore
     @Test
     public void testNodeTypeOfE() throws Exception {
@@ -76,6 +100,22 @@ public class PageParserSayidImpTest {
         Assert.assertEquals(NodeType.BODY_, result);
     }
 
+    @Test
+    public void testCrawlAndParser() throws Exception {
+        String url = "https://fileinfo.com/extension/csv";
+        String baseUrl = "https://fileinfo.com";
+        ParseredPersistenceImp.putServer("192.168.1.142", 27017);
+        doCrawl(url, baseUrl, node ->{
+            try {
+                FrameDigest frame = pageParser.doParse(node.url);
+                ParseredPersistenceImp.getPersistence(false)
+                        .saveValue(frame.persistenceObj(), baseUrl, System.currentTimeMillis());
+            } catch (PageParserException e) {
+                e.printStackTrace();
+            }
+            return true;
+        });
+    }
 
 }
 

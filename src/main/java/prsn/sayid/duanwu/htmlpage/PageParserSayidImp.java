@@ -130,12 +130,10 @@ public final class PageParserSayidImp implements PageParser
                 @Override
                 public BigInteger md5()
                 {
-                    try
-                    {
+                    try {
                         return md5Calculator.newInstance().calculate(_t.nodes);
                     }
-                    catch (InstantiationException | IllegalAccessException e)
-                    {
+                    catch (InstantiationException | IllegalAccessException e) {
                         L.error(e);
                         return ZERO;
                     }
@@ -143,12 +141,10 @@ public final class PageParserSayidImp implements PageParser
 
                 @Override
                 public BigInteger eigenvalue() {
-                    try
-                    {
+                    try {
                         return hyperplaneHash.newInstance().calculate(_t.nodes);
                     }
-                    catch (InstantiationException | IllegalAccessException e)
-                    {
+                    catch (InstantiationException | IllegalAccessException e) {
                         L.error(e);
                         return ZERO;
                     }
@@ -156,20 +152,17 @@ public final class PageParserSayidImp implements PageParser
             }
 
             @Override
-            public int countGroupByNodeType(NodeType nodeType)
-            {
+            public int countGroupByNodeType(NodeType nodeType) {
                 return _t.ndtpCount.get(nodeType);
             }
 
             @Override
-            public FrameNode getRoot()
-            {
+            public FrameNode getRoot() {
                 return _t.rootNode;
             }
 
             @Override
-            public List<FrameNode> wideFirstTravel()
-            {
+            public List<FrameNode> wideFirstTravel() {
                 return new ArrayList<>(_t.nodes);
             }
 
@@ -180,15 +173,15 @@ public final class PageParserSayidImp implements PageParser
 
             @Override
             public long distance(FrameDigest other)
-                    throws PageParserException
-            {
-                try
-                {
+                    throws PageParserException {
+                if (other == null)
+                    throw new NullPointerException(
+                            "Other Frame Digest illegal set to null.");
+                try {
                     return hyperplaneHash.newInstance()
                             .distance(other.persistenceObj().eigenvalue());
                 }
-                catch (InstantiationException | IllegalAccessException e)
-                {
+                catch (InstantiationException | IllegalAccessException e) {
                     throw new PageParserException(e);
                 }
             }

@@ -25,7 +25,7 @@ public class MD5 implements EigenvalueCalculator <List<FrameNode>>
     @Override
     public BigInteger calculate(List<FrameNode> resouces)
     {
-        this.nodes = new ArrayList(nodes);
+        this.nodes = new ArrayList(resouces);
 
         List<Byte> data = nodes.stream()
                 .map(a->(byte)(a.getNodeType().ordinal()))

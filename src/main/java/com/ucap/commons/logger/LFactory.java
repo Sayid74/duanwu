@@ -13,6 +13,8 @@ public class LFactory
         try
         {
             String lcPrp = System.getProperty("com.ucap.logger");
+            if (lcPrp == null)
+                lcPrp = "prsn.sayid.common.LoggerAdapterSayid";
             ClassLoader.getSystemClassLoader().loadClass(lcPrp);
         }
         catch (ClassNotFoundException ex) 
