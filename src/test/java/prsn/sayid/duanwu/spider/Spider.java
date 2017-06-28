@@ -113,7 +113,6 @@ public class Spider {
         this.baseUrl = baseUrl;
     }
 
-    /*
     public static void main (String args[]) {
         String url = "https://fileinfo.com/extension/csv";
         String baseUrl = "https://fileinfo.com";
@@ -121,6 +120,5 @@ public class Spider {
             return true;
         });
     }
-    */
 
 }
