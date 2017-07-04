@@ -102,32 +102,6 @@ public final class PageFrameSimhash implements EigenvalueCalculator<List<FrameNo
         return tot;
     }
 
-    /**
-     * Segments value into the count segment.Every segment has
-     * same bits.
-     *
-     * @param count the count for Segmentation.
-     * @return the list collects BigInteger object.
-     */
-    public List<BigInteger> segmentValue(int count) {
-        ArrayList<BigInteger> result = new ArrayList<>(count);
-
-        StringBuffer buffer = new StringBuffer(HASH_BITS);
-        for (int i = 0; i < HASH_BITS; i ++) buffer.append(0);
-        for (int i = 0; i < intSimHash.bitLength(); i++)
-            buffer.setCharAt(i, intSimHash.testBit(i)? '1': '0');
-
-        String s = buffer.toString();
-        int n = HASH_BITS / (count);
-        int i = 0;
-        do {
-            int m = (i + n) > s.length()? s.length() - i: n;
-            result.add(new BigInteger(s.substring(i, i+=m), 2));
-        } while (i < (s.length() - 1));
-
-        return result;
-    }
-
     private BigInteger hash(FrameNode node) {
         NodeType nodeTp = node.getNodeType();
         String id = node.getID();

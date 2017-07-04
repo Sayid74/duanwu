@@ -12,7 +12,10 @@ import org.slf4j.LoggerFactory;
 import ucap.Persistence.FramePersistence;
 import ucap.htmlpage.FrameDigest;
 
+import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -95,7 +98,7 @@ public class ParseredPersistenceImp implements FramePersistence {
         doc.put("eigenvalue", value.eigenvalue().toString());
         doc.put("loadingData", loadingDate);
         doc.put("savingDate", System.currentTimeMillis());
-        MongoDatabase db = mongoClnt.getDatabase(DATABASE_NAME);
+        MongoDatabase db = mongoClnt.getDatabase(websiteHost);
         db.getCollection(COLLECTION_NAME).insertOne(doc);
 
         // If mongodb's servers has been changed
@@ -130,4 +133,32 @@ public class ParseredPersistenceImp implements FramePersistence {
         mongoClnt.close();
         super.finalize();
     }
+
+
+    /**
+     * Segments value into the count segment.Every segment has
+     * same bits.
+     *
+     * @param count the count for Segmentation.
+     * @return the list collects BigInteger object.
+     */
+    public List<BigInteger> segmentValue(BigInteger value, int count, int integerLen) {
+        ArrayList<BigInteger> result = new ArrayList<>(count);
+
+        StringBuffer buffer = new StringBuffer(integerLen);
+        for (int i = 0; i < integerLen; i ++) buffer.append(0);
+        for (int i = 0; i < value.bitLength(); i++)
+            buffer.setCharAt(i, value.testBit(i)? '1': '0');
+
+        String s = buffer.toString();
+        int n = integerLen/ (count);
+        int i = 0;
+        do {
+            int m = (i + n) > s.length()? s.length() - i: n;
+            result.add(new BigInteger(s.substring(i, i+=m), 2));
+        } while (i < (s.length() - 1));
+
+        return result;
+    }
+
 }
